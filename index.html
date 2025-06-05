@@ -8,86 +8,155 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { --primary:#0084ff; --primary-dark:#0071e3; }
-    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#e8f1ff 0%,#f7fbff 100%);} 
-    select{appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" stroke="%23666" viewBox="0 0 24 24" fill="none"%3E%3Cpath d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right .7rem center;background-size:1rem;}
+    body{
+      font-family:'Inter',sans-serif;
+      background:linear-gradient(135deg,#e8f1ff 0%,#f7fbff 100%);
+      /* Cho phép scroll và đảm bảo trang có thể cuộn */
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling trên iOS */
+    } 
+    select{
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" stroke="%23666" viewBox="0 0 24 24" fill="none"%3E%3Cpath d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/%3E%3C/svg%3E');
+      background-repeat:no-repeat;
+      background-position:right .7rem center;
+      background-size:1rem;
+    }
+    
+    /* Tối ưu cho mobile */
+    @media (max-width: 640px) {
+      .main-container {
+        padding: 1rem 0.75rem;
+        max-height: none;
+      }
+      
+      .card {
+        margin: 0;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 100%;
+      }
+      
+      /* Đảm bảo textarea có thể scroll */
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      
+      /* Tối ưu cho danh sách nhóm */
+      #groupList {
+        max-height: 200px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-right: 0.5rem;
+      }
+      
+      /* Custom scrollbar cho webkit browsers */
+      #groupList::-webkit-scrollbar {
+        width: 4px;
+      }
+      
+      #groupList::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 2px;
+      }
+      
+      #groupList::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 2px;
+      }
+      
+      #groupList::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center py-10 px-4 relative overflow-hidden">
+<body class="min-h-screen relative">
 
-  <!-- Overlay loader + message -->
-  <div id="overlay" class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 text-center px-6">
-    <svg id="overlaySpinner" class="animate-spin h-10 w-10 text-[var(--primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-    </svg>
-    <p id="overlayText" class="mt-3 text-sm text-gray-700">Đang xử lý...</p>
-  </div>
-
-  <!-- STEP 1 -->
-  <div id="step1" class="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-10 space-y-8">
-    <header class="text-center space-y-1">
-      <h1 class="text-3xl font-extrabold text-gray-900 tracking-wide uppercase">Hệ thống quét nhóm Zalo</h1>
-      <p class="text-sm text-gray-500">Quét &amp; gửi tin nhắn cho thành viên nhóm Zalo nhanh chóng</p>
-    </header>
-
-    <!-- chọn nick -->
-    <div class="space-y-2">
-      <label for="nickSelect" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
-      <div class="relative">
-        <select id="nickSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
-          <option value="" disabled selected hidden>Chọn một nick …</option>
-          <option value="test">test</option>
-          <option value="Dương Nguyễn">Dương Nguyễn</option>
-          <option value="Đức Phòng">Đức Phòng</option>
-        </select>
-      </div>
+  <div class="main-container min-h-screen flex items-center justify-center py-4 px-4 sm:py-10">
+    
+    <!-- Overlay loader + message -->
+    <div id="overlay" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 text-center px-6">
+      <svg id="overlaySpinner" class="animate-spin h-10 w-10 text-[var(--primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p id="overlayText" class="mt-3 text-sm text-gray-700">Đang xử lý...</p>
     </div>
 
-    <button id="scanBtn" class="w-full flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-3 rounded-lg transition disabled:opacity-60">
-      <span>Quét nhóm</span>
-      <svg id="spinner" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
-    </button>
+    <!-- STEP 1 -->
+    <div id="step1" class="card w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+      <header class="text-center space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-wide uppercase">Hệ thống quét nhóm Zalo</h1>
+        <p class="text-sm text-gray-500">Quét &amp; gửi tin nhắn cho thành viên nhóm Zalo nhanh chóng</p>
+      </header>
 
-    <section id="resultSection" class="hidden space-y-4">
-      <div>
-        <h2 class="text-xl font-semibold text-gray-800">Kết quả</h2>
-        <ul id="groupList" class="list-decimal list-inside mt-1 space-y-1 text-gray-700"></ul>
-        <p id="emptyMsg" class="text-gray-400 italic">Không tìm thấy nhóm nào</p>
-      </div>
-      <div id="actionsBox" class="hidden space-y-3 pt-2 border-t border-gray-200">
-        <label for="groupSelect" class="block text-sm font-medium text-gray-600">Chọn nhóm để gửi tin nhắn</label>
-        <select id="groupSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary"></select>
-        <button id="nextBtn" class="w-full flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60">Tiếp tục</button>
-      </div>
-    </section>
-  </div>
-
-  <!-- STEP 2 -->
-  <div id="step2" class="hidden w-full max-w-lg bg-white rounded-3xl shadow-2xl p-10 space-y-8">
-    <header class="text-center space-y-1">
-      <h2 class="text-2xl font-extrabold text-gray-900 tracking-wide">Gửi tin nhắn tới nhóm</h2>
-      <p id="chosenGroup" class="text-sm text-gray-600"></p>
-    </header>
-
-    <div class="space-y-4">
-      <div>
-        <label for="message" class="block text-sm font-medium text-gray-700">Nội dung cần gửi <span class="text-red-500">*</span></label>
-        <textarea id="message" rows="4" class="mt-1 w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary" placeholder="Ví dụ: ..."></textarea>
+      <!-- chọn nick -->
+      <div class="space-y-2">
+        <label for="nickSelect" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
+        <div class="relative">
+          <select id="nickSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
+            <option value="" disabled selected hidden>Chọn một nick …</option>
+            <option value="test">test</option>
+            <option value="Dương Nguyễn">Dương Nguyễn</option>
+            <option value="Đức Phòng">Đức Phòng</option>
+          </select>
+        </div>
       </div>
 
-      <div>
-        <label for="images" class="block text-sm font-medium text-gray-700">Tải ảnh lên (tối đa 3 ảnh)</label>
-        <input id="images" type="file" accept="image/*" multiple class="mt-1 w-full" />
-      </div>
-    </div>
-
-    <div class="flex gap-3">
-      <button id="backBtn" class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition">Quay lại</button>
-      <button id="sendMsgBtn" class="flex-1 flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60">
-        <span>Gửi tin nhắn</span>
-        <svg id="spinnerSend" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+      <button id="scanBtn" class="w-full flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-3 rounded-lg transition disabled:opacity-60 touch-manipulation">
+        <span>Quét nhóm</span>
+        <svg id="spinner" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
       </button>
+
+      <section id="resultSection" class="hidden space-y-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Kết quả</h2>
+          <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <ul id="groupList" class="list-decimal list-inside space-y-1 text-gray-700 text-sm"></ul>
+            <p id="emptyMsg" class="text-gray-400 italic text-sm">Không tìm thấy nhóm nào</p>
+          </div>
+        </div>
+        <div id="actionsBox" class="hidden space-y-3 pt-2 border-t border-gray-200">
+          <label for="groupSelect" class="block text-sm font-medium text-gray-600">Chọn nhóm để gửi tin nhắn</label>
+          <select id="groupSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary"></select>
+          <button id="nextBtn" class="w-full flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation">Tiếp tục</button>
+        </div>
+      </section>
     </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" class="hidden card w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+      <header class="text-center space-y-1">
+        <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Gửi tin nhắn tới nhóm</h2>
+        <p id="chosenGroup" class="text-sm text-gray-600 break-words"></p>
+      </header>
+
+      <div class="space-y-4">
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Nội dung cần gửi <span class="text-red-500">*</span></label>
+          <textarea id="message" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary resize-vertical" placeholder="Nhập nội dung tin nhắn..."></textarea>
+        </div>
+
+        <div>
+          <label for="images" class="block text-sm font-medium text-gray-700 mb-1">Tải ảnh lên (tối đa 3 ảnh)</label>
+          <input id="images" type="file" accept="image/*" multiple class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="backBtn" class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition touch-manipulation">Quay lại</button>
+        <button id="sendMsgBtn" class="flex-1 flex items-center justify-center gap-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation">
+          <span>Gửi tin nhắn</span>
+          <svg id="spinnerSend" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -122,6 +191,16 @@
 
     let currentGroup = { id: '', name: '' };
 
+    // Ngăn zoom khi double tap trên iOS
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
     // ---- Quét nhóm ----
     scanBtn.addEventListener('click', async () => {
       const nick = nickSelect.value;
@@ -153,7 +232,7 @@
         } else {
           toggle(emptyMsg, false);
           groups.forEach(g => {
-            groupList.insertAdjacentHTML('beforeend', `<li>${g.name}</li>`);
+            groupList.insertAdjacentHTML('beforeend', `<li class="break-words">${g.name}</li>`);
             groupSelect.insertAdjacentHTML('beforeend', `<option value="${g.id}">${g.name}</option>`);
           });
           toggle(actionsBox, true);
@@ -177,6 +256,9 @@
       chosenGroup.textContent = `Sẽ gửi đến: ${currentGroup.name}`;
       toggle(step1, false);
       toggle(step2, true);
+      
+      // Scroll to top khi chuyển step
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // ---- Quay lại ----
@@ -184,6 +266,9 @@
       e.preventDefault();
       toggle(step2, false);
       toggle(step1, true);
+      
+      // Scroll to top khi quay lại
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // ---- Gửi tin nhắn ----
@@ -222,6 +307,7 @@
           toggle(step2, false);
           toggle(step1, true);
           overlayText.textContent = 'Đang xử lý...';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 3000);
       } catch (err) {
         console.error(err);
