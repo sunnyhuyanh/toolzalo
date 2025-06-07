@@ -112,7 +112,7 @@
         </div>
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Đăng nhập hệ thống</h1>
-          <p class="text-sm text-gray-600 mt-1">Quét nhóm gửi tin Zalo</p>
+          <p class="text-sm text-gray-600 mt-1">Quét nhóm Zalo tự động</p>
         </div>
       </div>
 
@@ -209,7 +209,6 @@
         <header class="text-center space-y-1">
           <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-wide uppercase">Hệ thống quét nhóm Zalo</h1>
           <p class="text-sm text-gray-500">Quét &amp; gửi tin nhắn cho thành viên nhóm Zalo nhanh chóng</p>
-          <p class="text-sm text-gray-500">***Lưu ý: mỗi 1 nick 1 ngày gửi tối đa 40 người</p>
         </header>
 
         <!-- chọn nick -->
@@ -267,6 +266,28 @@
           <div>
             <label for="images" class="block text-sm font-medium text-gray-700 mb-1">Tải ảnh lên (tối đa 3 ảnh)</label>
             <input id="images" type="file" accept="image/*" multiple class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
+            
+            <!-- Thông báo tải ảnh -->
+            <div id="imageStatus" class="mt-2 text-sm hidden">
+              <div id="imageCountSuccess" class="hidden text-green-600 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                <span id="imageCountText"></span>
+              </div>
+              <div id="imageCountWarning" class="hidden text-amber-600 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <span id="imageWarningText"></span>
+              </div>
+              <div id="imageCountError" class="hidden text-red-600 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+                <span id="imageErrorText"></span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -327,8 +348,62 @@
     const messageTxt = $('message');
     const imagesInput = $('images');
     const chosenGroup = $('chosenGroup');
+    
+    // Elements cho thông báo ảnh
+    const imageStatus = $('imageStatus');
+    const imageCountSuccess = $('imageCountSuccess');
+    const imageCountWarning = $('imageCountWarning');
+    const imageCountError = $('imageCountError');
+    const imageCountText = $('imageCountText');
+    const imageWarningText = $('imageWarningText');
+    const imageErrorText = $('imageErrorText');
 
     let currentGroup = { id: '', name: '' };
+
+    // Hàm kiểm tra số lượng ảnh
+    function checkImageCount() {
+      const fileCount = imagesInput.files.length;
+      
+      // Ẩn tất cả thông báo trước
+      toggle(imageCountSuccess, false);
+      toggle(imageCountWarning, false);
+      toggle(imageCountError, false);
+      
+      if (fileCount === 0) {
+        toggle(imageStatus, false);
+        return;
+      }
+      
+      toggle(imageStatus, true);
+      
+      if (fileCount === 3) {
+        toggle(imageCountSuccess, true);
+        imageCountText.textContent = "Đã tải đủ 3 ảnh - Hoàn hảo!";
+      } else if (fileCount < 3) {
+        toggle(imageCountWarning, true);
+        imageWarningText.textContent = `Đã tải ${fileCount} ảnh. Hãy tải thêm ${3 - fileCount} ảnh nữa để đủ 3 ảnh.`;
+      } else {
+        toggle(imageCountError, true);
+        imageErrorText.textContent = `Đã tải ${fileCount} ảnh. Vui lòng xóa bớt ${fileCount - 3} ảnh hoặc tải lại để đủ 3 ảnh.`;
+      }
+    }
+    
+    // Hàm hiển thị thông báo thành công với tích xanh
+    function showSuccessMessage(message) {
+      overlayText.innerHTML = `
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p class="text-green-600 font-medium">${message}</p>
+        </div>
+      `;
+    }
+
+    // Event listener cho input file
+    imagesInput.addEventListener('change', checkImageCount);
 
     // Kiểm tra đăng nhập khi load trang
     function checkAuth() {
@@ -501,7 +576,7 @@
 
       sendMsgBtn.disabled = true;
       toggle(spinnerSend, true);
-      overlayText.textContent = 'Đang tiến hành gửi tin nhắn, vui lòng chờ...';
+      overlayText.innerHTML = 'Đang tiến hành gửi tin nhắn, vui lòng chờ...';
       toggle(overlay, true);
 
       try {
@@ -516,15 +591,16 @@
         if (!res.ok) throw new Error('Send error');
         await res.json();
 
-        overlayText.textContent = 'Đã gửi tin nhắn thành công.';
+        showSuccessMessage('Đã gửi tin nhắn thành công!');
         messageTxt.value = '';
         imagesInput.value = '';
+        checkImageCount(); // Reset thông báo ảnh
 
         setTimeout(() => {
           toggle(overlay, false);
           toggle(step2, false);
           toggle(step1, true);
-          overlayText.textContent = 'Đang xử lý...';
+          overlayText.innerHTML = 'Đang xử lý...';
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 3000);
       } catch (err) {
