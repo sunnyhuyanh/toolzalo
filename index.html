@@ -14,7 +14,7 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-    } 
+    }
     select{
       appearance:none;
       -webkit-appearance:none;
@@ -24,11 +24,9 @@
       background-position:right .7rem center;
       background-size:1rem;
     }
-    
     .login-bg {
       background: linear-gradient(135deg, #0084ff 0%, #0066cc 50%, #004499 100%);
     }
-    
     .zalo-logo {
       width: 60px;
       height: 60px;
@@ -39,64 +37,24 @@
       justify-content: center;
       box-shadow: 0 8px 32px rgba(0, 132, 255, 0.3);
     }
-    
     .feature-card {
       transition: all 0.3s ease;
     }
-    
     .feature-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 20px 40px rgba(0, 132, 255, 0.15);
     }
-    
     @media (max-width: 640px) {
-      .main-container {
-        padding: 1rem 0.75rem;
-        max-height: none;
-      }
-      
-      .card {
-        margin: 0;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        max-width: 100%;
-      }
-      
-      textarea {
-        resize: vertical;
-        min-height: 100px;
-      }
-      
-      #groupList {
-        max-height: 200px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-right: 0.5rem;
-      }
-      
-      #groupList::-webkit-scrollbar {
-        width: 4px;
-      }
-      
-      #groupList::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 2px;
-      }
-      
-      #groupList::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 2px;
-      }
-      
-      #groupList::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-      }
+      .main-container { padding: 1rem 0.75rem; max-height: none; }
+      .card { margin: 0; border-radius: 1rem; padding: 1.5rem; max-width: 100%; }
+      textarea { resize: vertical; min-height: 100px; }
+      #groupList, #groupList2 { max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 0.5rem; }
+      #groupList::-webkit-scrollbar, #groupList2::-webkit-scrollbar { width: 4px; }
+      #groupList::-webkit-scrollbar-track, #groupList2::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 2px; }
+      #groupList::-webkit-scrollbar-thumb, #groupList2::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 2px; }
+      #groupList::-webkit-scrollbar-thumb:hover, #groupList2::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     }
-    
-    .shake {
-      animation: shake 0.5s ease-in-out;
-    }
-    
+    .shake { animation: shake 0.5s ease-in-out; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-5px); }
@@ -109,7 +67,6 @@
   <!-- LOGIN PAGE -->
   <div id="loginPage" class="login-bg min-h-screen flex items-center justify-center py-4 px-4">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 space-y-8">
-      <!-- Logo và tiêu đề -->
       <div class="text-center space-y-4">
         <div class="flex justify-center">
           <div class="zalo-logo">
@@ -124,36 +81,17 @@
           <p class="text-sm text-gray-600 mt-1">Quét nhóm Zalo tự động</p>
         </div>
       </div>
-
-      <!-- Form đăng nhập -->
       <form id="loginForm" class="space-y-6">
         <div class="space-y-4">
           <div>
             <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Tên đăng nhập</label>
-            <input 
-              type="text" 
-              id="username" 
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Nhập tên đăng nhập"
-              required
-            />
+            <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Nhập tên đăng nhập" required />
           </div>
-          
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
             <div class="relative">
-              <input 
-                type="password" 
-                id="password" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
-                placeholder="Nhập mật khẩu"
-                required
-              />
-              <button 
-                type="button" 
-                id="togglePassword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
+              <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12" placeholder="Nhập mật khẩu" required />
+              <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
                 <svg id="eyeOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -165,16 +103,10 @@
             </div>
           </div>
         </div>
-
         <div id="loginError" class="hidden bg-red-50 border border-red-200 rounded-lg p-3">
           <p class="text-sm text-red-600 text-center">Tên đăng nhập hoặc mật khẩu không đúng!</p>
         </div>
-
-        <button 
-          type="submit" 
-          id="loginBtn"
-          class="w-full bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-60 touch-manipulation"
-        >
+        <button type="submit" id="loginBtn" class="w-full bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-60 touch-manipulation">
           <span id="loginBtnText">Đăng nhập</span>
           <svg id="loginSpinner" class="hidden animate-spin h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -182,8 +114,6 @@
           </svg>
         </button>
       </form>
-
-      <!-- Footer -->
       <div class="text-center pt-4 border-t border-gray-100">
         <p class="text-xs text-gray-400">Developed by Hailinhmacduc</p>
       </div>
@@ -192,27 +122,21 @@
 
   <!-- MAIN APP -->
   <div id="mainApp" class="hidden">
-    <!-- Header với nút đăng xuất và Home -->
+    <!-- Header -->
     <div class="fixed top-4 right-4 z-40 flex gap-2">
-      <button 
-        id="homeBtn"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
-      >
+      <button id="homeBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1">
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
         </svg>
         Trang chủ
       </button>
-      <button 
-        id="logoutBtn"
-        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-      >
+      <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all">
         Đăng xuất
       </button>
     </div>
 
-    <div class="main-container min-h-screen flex items-center justify-center py-4 px-4 sm:py-10">
-      
+<div class="main-container min-h-screen flex items-center justify-center py-4 px-4 sm:py-10">
+
       <!-- Overlay loader + message -->
       <div id="overlay" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 text-center px-6">
         <svg id="overlaySpinner" class="animate-spin h-10 w-10 text-[var(--primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -287,7 +211,6 @@
             <p class="text-sm text-gray-500">Quét nhóm và gửi tin nhắn cho thành viên</p>
           </header>
 
-          <!-- chọn nick -->
           <div class="space-y-2">
             <label for="nickSelect" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
             <div class="relative">
@@ -320,8 +243,7 @@
             </div>
           </section>
         </div>
-
-        <!-- STEP 2 -->
+<!-- STEP 2 -->
         <div id="step2" class="hidden card w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
           <header class="text-center space-y-1">
             <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Gửi tin nhắn tới nhóm</h2>
@@ -338,7 +260,6 @@
               <label for="images" class="block text-sm font-medium text-gray-700 mb-1">Tải ảnh lên (tối đa 3 ảnh)</label>
               <input id="images" type="file" accept="image/*" multiple class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
               
-              <!-- Thông báo tải ảnh -->
               <div id="imageStatus" class="mt-2 text-sm hidden">
                 <div id="imageCountSuccess" class="hidden text-green-600 flex items-center gap-1">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -373,14 +294,167 @@
       </div>
 
       <!-- TÍNH NĂNG 2: ĐĂNG BÀI TỰ ĐỘNG -->
-      <div id="feature2Page" class="hidden card w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
-        <header class="text-center space-y-1">
-          <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Đăng bài tự động</h1>
-          <p class="text-sm text-gray-500">Đăng bài cho tất cả các nhóm được chọn</p>
-        </header>
+      <div id="feature2Page" class="hidden">
+        <!-- STEP 1: QUÉT NHÓM -->
+        <div id="step2_1" class="card w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <header class="text-center space-y-1">
+            <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Đăng bài tự động</h1>
+            <p class="text-sm text-gray-500">Quét nhóm và chọn nhóm để đăng bài</p>
+          </header>
 
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p class="text-sm text-amber-800 text-center">🚧 Tính năng đang được phát triển</p>
+          <div class="space-y-2">
+            <label for="nickSelect2" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
+            <div class="relative">
+              <select id="nickSelect2" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
+                <option value="" disabled selected hidden>Chọn một nick …</option>
+                <option value="test">test</option>
+                <option value="Dương Nguyễn">Dương Nguyễn</option>
+                <option value="Đức Phòng">Đức Phòng</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="scanBtn2" class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-60 touch-manipulation">
+            <span>Quét nhóm</span>
+            <svg id="spinner2" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+          </button>
+
+          <section id="resultSection2" class="hidden space-y-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800 mb-2">Kết quả quét nhóm</h2>
+              <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                <div id="groupListContainer2" class="space-y-3">
+                  <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                    <input type="checkbox" id="selectAllGroups" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                    <label for="selectAllGroups" class="text-sm font-medium text-green-800">Chọn tất cả nhóm</label>
+                  </div>
+                  
+                  <div id="groupList2" class="space-y-2 max-h-48 overflow-y-auto"></div>
+                </div>
+                <p id="emptyMsg2" class="text-gray-400 italic text-sm">Không tìm thấy nhóm nào</p>
+              </div>
+            </div>
+            <div id="actionsBox2" class="hidden space-y-3 pt-2 border-t border-gray-200">
+              <div id="selectedGroupsInfo" class="text-sm text-gray-600">
+                <span id="selectedCount">0</span> nhóm được chọn
+              </div>
+              <button id="nextBtn2" class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation">Tiếp tục</button>
+            </div>
+          </section>
+        </div>
+<!-- STEP 2: SOẠN NỘI DUNG -->
+        <div id="step2_2" class="hidden card w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <header class="text-center space-y-1">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Soạn nội dung đăng bài</h2>
+            <p id="selectedGroupsDisplay" class="text-sm text-gray-600 break-words"></p>
+          </header>
+
+          <div class="space-y-6">
+            <div>
+              <label for="postContent" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                  </svg>
+                  Nội dung bài viết
+                  <span class="text-red-500">*</span>
+                </span>
+              </label>
+              <textarea 
+                id="postContent" 
+                rows="6" 
+                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 resize-vertical" 
+                placeholder="Bạn đang nghĩ gì...?"
+                required
+              ></textarea>
+              <div class="mt-1 text-xs text-gray-500">
+                <span id="charCount">0</span> ký tự
+              </div>
+            </div>
+
+            <div>
+              <label for="postImages" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                  </svg>
+                  Tải ảnh lên
+                  <span class="text-red-500">* (Bắt buộc 4 ảnh)</span>
+                </span>
+              </label>
+              <input 
+                id="postImages" 
+                type="file" 
+                accept="image/*" 
+                multiple 
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" 
+                required
+              />
+              
+              <div id="postImageStatus" class="mt-2 text-sm hidden">
+                <div id="postImageSuccess" class="hidden text-green-600 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <span id="postImageSuccessText"></span>
+                </div>
+                <div id="postImageWarning" class="hidden text-amber-600 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                  </svg>
+                  <span id="postImageWarningText"></span>
+                </div>
+                <div id="postImageError" class="hidden text-red-600 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                  <span id="postImageErrorText"></span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                  </svg>
+                  Hẹn giờ đăng bài (tùy chọn)
+                </span>
+              </label>
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="enableSchedule" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                <label for="enableSchedule" class="text-sm text-gray-600">Bật hẹn giờ đăng bài</label>
+              </div>
+              
+              <div id="scheduleInputs" class="hidden mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="scheduleDate" class="block text-xs font-medium text-gray-600 mb-1">Ngày</label>
+                  <input 
+                    type="date" 
+                    id="scheduleDate" 
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label for="scheduleTime" class="block text-xs font-medium text-gray-600 mb-1">Giờ</label>
+                  <input 
+                    type="time" 
+                    id="scheduleTime" 
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="backBtn2" class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition touch-manipulation">Quay lại</button>
+            <button id="publishBtn" class="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation">
+              <span>Đăng bài</span>
+              <svg id="publishSpinner" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -399,11 +473,11 @@
     </div>
   </div>
 
+  <!-- SCRIPT -->
   <script>
-    const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-automation';
+const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-automation';
     const sendWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-sent-text-image';
 
-    // Thông tin đăng nhập
     const ADMIN_USERNAME = 'Admin';
     const ADMIN_PASSWORD = 'nguyenduc139@';
 
@@ -430,6 +504,42 @@
     const feature1Page = $('feature1Page');
     const feature2Page = $('feature2Page');
     const feature3Page = $('feature3Page');
+    
+    // Feature 2 elements
+    const step2_1 = $('step2_1');
+    const step2_2 = $('step2_2');
+    const nickSelect2 = $('nickSelect2');
+    const scanBtn2 = $('scanBtn2');
+    const spinner2 = $('spinner2');
+    const resultSection2 = $('resultSection2');
+    const groupList2 = $('groupList2');
+    const emptyMsg2 = $('emptyMsg2');
+    const actionsBox2 = $('actionsBox2');
+    const selectAllGroups = $('selectAllGroups');
+    const selectedCount = $('selectedCount');
+    const nextBtn2 = $('nextBtn2');
+    const backBtn2 = $('backBtn2');
+    const selectedGroupsDisplay = $('selectedGroupsDisplay');
+    
+    // Post content elements
+    const postContent = $('postContent');
+    const postImages = $('postImages');
+    const enableSchedule = $('enableSchedule');
+    const scheduleInputs = $('scheduleInputs');
+    const scheduleDate = $('scheduleDate');
+    const scheduleTime = $('scheduleTime');
+    const publishBtn = $('publishBtn');
+    const publishSpinner = $('publishSpinner');
+    const charCount = $('charCount');
+    
+    // Post image status elements
+    const postImageStatus = $('postImageStatus');
+    const postImageSuccess = $('postImageSuccess');
+    const postImageWarning = $('postImageWarning');
+    const postImageError = $('postImageError');
+    const postImageSuccessText = $('postImageSuccessText');
+    const postImageWarningText = $('postImageWarningText');
+    const postImageErrorText = $('postImageErrorText');
 
     // Feature cards
     const feature1Card = $('feature1Card');
@@ -468,27 +578,29 @@
     const imageErrorText = $('imageErrorText');
 
     let currentGroup = { id: '', name: '' };
+    let selectedGroups = [];
 
     // Hàm hiển thị trang
     function showPage(pageToShow) {
-      // Ẩn tất cả các trang
       toggle(homePage, false);
       toggle(feature1Page, false);
       toggle(feature2Page, false);
       toggle(feature3Page, false);
-      
-      // Hiển thị trang được chọn
       toggle(pageToShow, true);
-      
-      // Reset scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // Hàm hiển thị step cho feature 2
+    function showFeature2Step(stepToShow) {
+      toggle(step2_1, false);
+      toggle(step2_2, false);
+      toggle(stepToShow, true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Hàm kiểm tra số lượng ảnh
+    // Hàm kiểm tra số lượng ảnh cho tin nhắn
     function checkImageCount() {
       const fileCount = imagesInput.files.length;
-      
-      // Ẩn tất cả thông báo trước
       toggle(imageCountSuccess, false);
       toggle(imageCountWarning, false);
       toggle(imageCountError, false);
@@ -510,6 +622,51 @@
         toggle(imageCountError, true);
         imageErrorText.textContent = `Đã tải ${fileCount} ảnh. Vui lòng xóa bớt ${fileCount - 3} ảnh hoặc tải lại để đủ 3 ảnh.`;
       }
+    }
+    
+    // Hàm kiểm tra số lượng ảnh cho đăng bài
+    function checkPostImageCount() {
+      const fileCount = postImages.files.length;
+      toggle(postImageSuccess, false);
+      toggle(postImageWarning, false);
+      toggle(postImageError, false);
+      
+      if (fileCount === 0) {
+        toggle(postImageStatus, false);
+        return;
+      }
+      
+      toggle(postImageStatus, true);
+      
+      if (fileCount === 4) {
+        toggle(postImageSuccess, true);
+        postImageSuccessText.textContent = "Đã tải đủ 4 ảnh - Hoàn hảo!";
+      } else if (fileCount < 4) {
+        toggle(postImageWarning, true);
+        postImageWarningText.textContent = `Đã tải ${fileCount} ảnh. Cần tải thêm ${4 - fileCount} ảnh nữa để đủ 4 ảnh.`;
+      } else {
+        toggle(postImageError, true);
+        postImageErrorText.textContent = `Đã tải ${fileCount} ảnh. Vui lòng xóa bớt ${fileCount - 4} ảnh hoặc tải lại để đủ 4 ảnh.`;
+      }
+    }
+    
+    // Hàm cập nhật số ký tự
+    function updateCharCount() {
+      const count = postContent.value.length;
+      charCount.textContent = count;
+      charCount.className = count > 1000 ? 'text-red-500' : 'text-gray-500';
+    }
+    
+    // Hàm cập nhật số nhóm được chọn
+    function updateSelectedGroupsCount() {
+      const checkboxes = document.querySelectorAll('#groupList2 input[type="checkbox"]:checked');
+      selectedCount.textContent = checkboxes.length;
+      nextBtn2.disabled = checkboxes.length === 0;
+      
+      selectedGroups = Array.from(checkboxes).map(cb => ({
+        id: cb.value,
+        name: cb.getAttribute('data-name')
+      }));
     }
     
     // Hàm hiển thị thông báo thành công với tích xanh
@@ -544,16 +701,16 @@
     function showMainApp() {
       toggle(loginPage, false);
       toggle(mainApp, true);
-      showPage(homePage); // Hiển thị trang chủ khi vào app
+      showPage(homePage);
     }
-
-    // Event listeners cho các tính năng
+// Event listeners cho các tính năng
     feature1Card.addEventListener('click', () => {
       showPage(feature1Page);
     });
 
     feature2Card.addEventListener('click', () => {
       showPage(feature2Page);
+      showFeature2Step(step2_1);
     });
 
     feature3Card.addEventListener('click', () => {
@@ -563,7 +720,6 @@
     // Nút Home
     homeBtn.addEventListener('click', () => {
       showPage(homePage);
-      // Reset trạng thái của feature 1
       toggle(step1, true);
       toggle(step2, false);
       toggle(resultSec, false);
@@ -574,10 +730,47 @@
       groupList.innerHTML = '';
       groupSelect.innerHTML = '';
       checkImageCount();
+      
+      showFeature2Step(step2_1);
+      toggle(resultSection2, false);
+      toggle(actionsBox2, false);
+      nickSelect2.selectedIndex = 0;
+      postContent.value = '';
+      postImages.value = '';
+      groupList2.innerHTML = '';
+      selectedGroups = [];
+      enableSchedule.checked = false;
+      toggle(scheduleInputs, false);
+      updateCharCount();
+      checkPostImageCount();
     });
 
     // Event listener cho input file
     imagesInput.addEventListener('change', checkImageCount);
+    postImages.addEventListener('change', checkPostImageCount);
+    
+    // Event listener cho textarea
+    postContent.addEventListener('input', updateCharCount);
+    
+    // Event listener cho hẹn giờ
+    enableSchedule.addEventListener('change', () => {
+      if (enableSchedule.checked) {
+        toggle(scheduleInputs, true);
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        scheduleDate.value = tomorrow.toISOString().split('T')[0];
+        scheduleTime.value = '09:00';
+      } else {
+        toggle(scheduleInputs, false);
+      }
+    });
+    
+    // Event listener cho select all
+    selectAllGroups.addEventListener('change', () => {
+      const checkboxes = document.querySelectorAll('#groupList2 input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = selectAllGroups.checked);
+      updateSelectedGroupsCount();
+    });
 
     // Toggle hiển thị mật khẩu
     togglePassword.addEventListener('click', () => {
@@ -605,13 +798,11 @@
       toggle(loginSpinner, true);
       toggle(loginError, false);
 
-      // Giả lập delay để có cảm giác xử lý
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         sessionStorage.setItem('zalo_scanner_logged_in', 'true');
         showMainApp();
-        // Reset form
         loginForm.reset();
       } else {
         toggle(loginError, true);
@@ -629,7 +820,6 @@
       if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         sessionStorage.removeItem('zalo_scanner_logged_in');
         showLoginPage();
-        // Reset app state
         showPage(homePage);
         toggle(step1, true);
         toggle(step2, false);
@@ -654,7 +844,7 @@
       lastTouchEnd = now;
     }, false);
 
-    // ---- Quét nhóm ----
+    // ---- FEATURE 1: Quét nhóm ----
     scanBtn.addEventListener('click', async () => {
       const nick = nickSelect.value;
       if (!nick) return alert('Vui lòng chọn một nick.');
@@ -701,7 +891,7 @@
       }
     });
 
-    // ---- Chuyển sang bước 2 ----
+    // ---- FEATURE 1: Chuyển sang bước 2 ----
     nextBtn.addEventListener('click', () => {
       const groupId = groupSelect.value;
       if (!groupId) return alert('Vui lòng chọn một nhóm.');
@@ -713,7 +903,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ---- Quay lại ----
+    // ---- FEATURE 1: Quay lại ----
     backBtn.addEventListener('click', (e) => {
       e.preventDefault();
       toggle(step2, false);
@@ -722,7 +912,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ---- Gửi tin nhắn ----
+    // ---- FEATURE 1: Gửi tin nhắn ----
     sendMsgBtn.addEventListener('click', async () => {
       const nick = nickSelect.value;
       const text = messageTxt.value.trim();
@@ -750,7 +940,7 @@
         showSuccessMessage('Đã gửi tin nhắn thành công!');
         messageTxt.value = '';
         imagesInput.value = '';
-        checkImageCount(); // Reset thông báo ảnh
+        checkImageCount();
 
         setTimeout(() => {
           toggle(overlay, false);
@@ -768,9 +958,161 @@
         toggle(spinnerSend, false);
       }
     });
+// ---- FEATURE 2: Quét nhóm cho đăng bài ----
+    scanBtn2.addEventListener('click', async () => {
+      const nick = nickSelect2.value;
+      if (!nick) return alert('Vui lòng chọn một nick.');
+
+      scanBtn2.disabled = true;
+      toggle(spinner2, true);
+      overlayText.innerHTML = 'Đang quét nhóm, vui lòng chờ...';
+      toggle(overlay, true);
+      toggle(resultSection2, false);
+      toggle(actionsBox2, false);
+      groupList2.innerHTML = '';
+      selectedGroups = [];
+
+      try {
+        const res = await fetch(scanWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick }) });
+        if (!res.ok) throw new Error('Network error');
+        const raw = await res.json();
+
+        let groups = [];
+        if (Array.isArray(raw)) {
+          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ id: i.groupId || i.groupid || i.id, name: i.name || i.groupName || 'Không tên' }));
+        } else if (raw.groups) {
+          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => typeof g === 'string' ? { id: g, name: g } : { id: g.id || g.groupId, name: g.name || g.groupName || g.id });
+        }
+
+        if (groups.length === 0) {
+          toggle(emptyMsg2, true);
+        } else {
+          toggle(emptyMsg2, false);
+          groups.forEach((g, index) => {
+            groupList2.insertAdjacentHTML('beforeend', `
+              <div class="flex items-center gap-2 p-2 bg-white rounded border hover:bg-gray-50">
+                <input 
+                  type="checkbox" 
+                  id="group_${index}" 
+                  value="${g.id}" 
+                  data-name="${g.name}"
+                  class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                  onchange="updateSelectedGroupsCount()"
+                >
+                <label for="group_${index}" class="text-sm text-gray-700 break-words flex-1 cursor-pointer">${g.name}</label>
+              </div>
+            `);
+          });
+          toggle(actionsBox2, true);
+        }
+        toggle(resultSection2, true);
+        updateSelectedGroupsCount();
+      } catch (err) {
+        console.error(err);
+        alert('Quét nhóm thất bại, vui lòng thử lại.');
+      } finally {
+        scanBtn2.disabled = false;
+        toggle(spinner2, false);
+        toggle(overlay, false);
+      }
+    });
+
+    // ---- FEATURE 2: Chuyển sang soạn nội dung ----
+    nextBtn2.addEventListener('click', () => {
+      if (selectedGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm.');
+      
+      const groupNames = selectedGroups.map(g => g.name).join(', ');
+      selectedGroupsDisplay.textContent = `Sẽ đăng bài vào ${selectedGroups.length} nhóm: ${groupNames}`;
+      showFeature2Step(step2_2);
+    });
+
+    // ---- FEATURE 2: Quay lại ----
+    backBtn2.addEventListener('click', () => {
+      showFeature2Step(step2_1);
+    });
+
+    // ---- FEATURE 2: Đăng bài ----
+    publishBtn.addEventListener('click', async () => {
+      const nick = nickSelect2.value;
+      const text = postContent.value.trim();
+      const files = postImages.files;
+      
+      if (!text) return alert('Vui lòng nhập nội dung bài viết.');
+      if (files.length !== 4) return alert('Vui lòng tải đúng 4 ảnh.');
+      if (selectedGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm.');
+
+      let scheduleData = null;
+      if (enableSchedule.checked) {
+        if (!scheduleDate.value || !scheduleTime.value) {
+          return alert('Vui lòng chọn ngày và giờ hẹn đăng bài.');
+        }
+        scheduleData = {
+          date: scheduleDate.value,
+          time: scheduleTime.value
+        };
+      }
+
+      publishBtn.disabled = true;
+      toggle(publishSpinner, true);
+      overlayText.innerHTML = 'Đang tiến hành đăng bài, vui lòng chờ...';
+      toggle(overlay, true);
+
+      try {
+        const formData = new FormData();
+        formData.append('nick', nick);
+        formData.append('text', text);
+        formData.append('groups', JSON.stringify(selectedGroups));
+        
+        Array.from(files).forEach((f, idx) => {
+          formData.append('image' + (idx + 1), f);
+        });
+        
+        if (scheduleData) {
+          formData.append('schedule', JSON.stringify(scheduleData));
+        }
+
+        const res = await fetch('https://primary-production-55bc0.up.railway.app/webhook/zalo-post-auto', { 
+          method: 'POST', 
+          body: formData 
+        });
+        
+        if (!res.ok) throw new Error('Post error');
+        await res.json();
+
+        showSuccessMessage('Đã đăng bài thành công!');
+        
+        postContent.value = '';
+        postImages.value = '';
+        enableSchedule.checked = false;
+        toggle(scheduleInputs, false);
+        updateCharCount();
+        checkPostImageCount();
+
+        setTimeout(() => {
+          toggle(overlay, false);
+          showFeature2Step(step2_1);
+          overlayText.innerHTML = 'Đang xử lý...';
+        }, 3000);
+      } catch (err) {
+        console.error(err);
+        alert('Đăng bài thất bại, vui lòng thử lại.');
+        toggle(overlay, false);
+      } finally {
+        publishBtn.disabled = false;
+        toggle(publishSpinner, false);
+      }
+    });
 
     // Khởi tạo ứng dụng
     checkAuth();
+    
+    // Đảm bảo updateSelectedGroupsCount có thể truy cập global
+    window.updateSelectedGroupsCount = updateSelectedGroupsCount;
+    
+    // Khởi tạo các giá trị ban đầu
+    updateCharCount();
+    checkImageCount();
+    checkPostImageCount();
   </script>
 </body>
 </html>
