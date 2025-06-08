@@ -1071,7 +1071,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
           formData.append('schedule', JSON.stringify(scheduleData));
         }
 
-        const res = await fetch('https://primary-production-55bc0.up.railway.app/webhook/zalo-post-auto', { 
+        const res = await fetch('https://primary-production-55bc0.up.railway.app/webhook/zalo-post-group', { 
           method: 'POST', 
           body: formData 
         });
