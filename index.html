@@ -459,24 +459,164 @@
       </div>
 
       <!-- TÍNH NĂNG 3: MỜI THÀNH VIÊN -->
-      <div id="feature3Page" class="hidden card w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
-        <header class="text-center space-y-1">
-          <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Mời thành viên vào nhóm</h1>
-          <p class="text-sm text-gray-500">Mời thành viên vào nhóm Zalo</p>
-        </header>
+      <div id="feature3Page" class="hidden">
+        <!-- STEP 1: QUÉT NHÓM -->
+        <div id="step3_1" class="card w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <header class="text-center space-y-1">
+            <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Mời thành viên vào nhóm</h1>
+            <p class="text-sm text-gray-500">Quét nhóm và chọn thành viên để mời vào nhóm khác</p>
+          </header>
 
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p class="text-sm text-amber-800 text-center">🚧 Tính năng đang được phát triển</p>
+          <div class="space-y-2">
+            <label for="nickSelect3" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
+            <div class="relative">
+              <select id="nickSelect3" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-purple-500">
+                <option value="test">test</option>
+                <option value="Dương Nguyễn">Dương Nguyễn</option>
+                <option value="Đức Phòng">Đức Phòng</option>
+              </select>
+            </div>
+            <p class="text-xs text-amber-600 font-medium">***Lưu ý: mỗi nick 1 ngày chỉ nên mời 30 người</p>
+          </div>
+
+          <button id="scanBtn3" class="w-full flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-lg transition disabled:opacity-60 touch-manipulation">
+            <span>Quét nhóm</span>
+            <svg id="spinner3" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+          </button>
+
+          <section id="resultSection3" class="hidden space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <!-- Cột bên trái: Chọn nhóm nguồn -->
+              <div class="space-y-3">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-1">
+                  <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                  </svg>
+                  Chọn nhóm nguồn
+                </h2>
+                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50 h-80 overflow-y-auto">
+                  <div id="sourceGroupList" class="space-y-2">
+                    <!-- Danh sách nhóm nguồn sẽ được thêm vào đây -->
+                  </div>
+                  <p id="emptySourceMsg" class="text-gray-400 italic text-sm">Không tìm thấy nhóm nào</p>
+                </div>
+                <div class="text-sm text-gray-600">
+                  <span id="selectedSourceCount">0</span> nhóm nguồn được chọn
+                </div>
+              </div>
+              
+              <!-- Cột bên phải: Chọn nhóm đích -->
+              <div class="space-y-3">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-1">
+                  <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"></path>
+                  </svg>
+                  Chọn nhóm đích
+                </h2>
+                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50 h-80 overflow-y-auto">
+                  <div id="targetGroupList" class="space-y-2">
+                    <!-- Danh sách nhóm đích sẽ được thêm vào đây -->
+                  </div>
+                  <p id="emptyTargetMsg" class="text-gray-400 italic text-sm">Không tìm thấy nhóm nào</p>
+                </div>
+                <div class="text-sm text-gray-600">
+                  <span id="selectedTargetCount">0</span> nhóm đích được chọn
+                </div>
+              </div>
+            </div>
+            <div id="actionsBox3" class="space-y-3 pt-4 border-t border-gray-200">
+              <button id="nextBtn3" class="w-full flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation">Tiếp tục</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- STEP 2: QUÉT THÀNH VIÊN VÀ MỜI -->
+        <div id="step3_2" class="hidden card w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <header class="text-center space-y-1">
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Quét và mời thành viên</h2>
+            <div class="text-sm text-gray-600 break-words">
+              <p id="sourceGroupDisplay" class="font-medium"></p>
+              <p id="targetGroupDisplay" class="font-medium"></p>
+            </div>
+          </header>
+
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                    </svg>
+                    Số lượng thành viên quét được
+                  </span>
+                </label>
+                <div id="memberCount" class="text-xl font-semibold text-purple-600">0</div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    Số lượng thành viên đã mời
+                  </span>
+                </label>
+                <div id="invitedCount" class="text-xl font-semibold text-green-600">0</div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label for="maxInvites" class="block text-sm font-medium text-gray-700">Số lượng thành viên cần mời (tối đa)</label>
+              <input 
+                type="number" 
+                id="maxInvites" 
+                min="1" 
+                max="100" 
+                value="30"
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500"
+              />
+              <p class="text-xs text-gray-500">Giới hạn số lượng để tránh bị khóa tài khoản</p>
+            </div>
+
+            <div class="flex gap-2 items-center">
+              <input type="checkbox" id="autoInvite" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+              <label for="autoInvite" class="text-sm text-gray-600">Tự động mời khi quét xong</label>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button id="backBtn3" class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition touch-manipulation">Quay lại</button>
+              <button id="scanMembersBtn" class="flex-1 flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation">
+                <span>Quét thành viên</span>
+                <svg id="scanMembersSpinner" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+              </button>
+            </div>
+            
+            <button id="inviteBtn" class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 touch-manipulation" disabled>
+              <span>Mời thành viên</span>
+              <svg id="inviteSpinner" class="hidden animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+            </button>
+          </div>
+
+          <div id="progressContainer" class="hidden space-y-2">
+            <div class="flex justify-between text-sm text-gray-600">
+              <span>Tiến trình</span>
+              <span id="progressText">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+              <div id="progressBar" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- SCRIPT -->
-  <script>
+      <script>
 const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-automation';
     const sendWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-sent-text-image';
+    const inviteWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-invite-member';
 
     const ADMIN_USERNAME = 'Admin';
     const ADMIN_PASSWORD = 'nguyenduc139@';
@@ -520,6 +660,36 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     const nextBtn2 = $('nextBtn2');
     const backBtn2 = $('backBtn2');
     const selectedGroupsDisplay = $('selectedGroupsDisplay');
+    
+    // Feature 3 elements
+    const step3_1 = $('step3_1');
+    const step3_2 = $('step3_2');
+    const nickSelect3 = $('nickSelect3');
+    const scanBtn3 = $('scanBtn3');
+    const spinner3 = $('spinner3');
+    const resultSection3 = $('resultSection3');
+    const sourceGroupList = $('sourceGroupList');
+    const targetGroupList = $('targetGroupList');
+    const emptySourceMsg = $('emptySourceMsg');
+    const emptyTargetMsg = $('emptyTargetMsg');
+    const selectedSourceCount = $('selectedSourceCount');
+    const selectedTargetCount = $('selectedTargetCount');
+    const actionsBox3 = $('actionsBox3');
+    const nextBtn3 = $('nextBtn3');
+    const backBtn3 = $('backBtn3');
+    const sourceGroupDisplay = $('sourceGroupDisplay');
+    const targetGroupDisplay = $('targetGroupDisplay');
+    const memberCount = $('memberCount');
+    const invitedCount = $('invitedCount');
+    const maxInvites = $('maxInvites');
+    const autoInvite = $('autoInvite');
+    const scanMembersBtn = $('scanMembersBtn');
+    const scanMembersSpinner = $('scanMembersSpinner');
+    const inviteBtn = $('inviteBtn');
+    const inviteSpinner = $('inviteSpinner');
+    const progressContainer = $('progressContainer');
+    const progressBar = $('progressBar');
+    const progressText = $('progressText');
     
     // Post content elements
     const postContent = $('postContent');
@@ -579,6 +749,9 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
 
     let currentGroup = { id: '', name: '' };
     let selectedGroups = [];
+    let sourceGroups = [];
+    let targetGroups = [];
+    let members = [];
 
     // Hàm hiển thị trang
     function showPage(pageToShow) {
@@ -594,6 +767,14 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     function showFeature2Step(stepToShow) {
       toggle(step2_1, false);
       toggle(step2_2, false);
+      toggle(stepToShow, true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // Hàm hiển thị step cho feature 3
+    function showFeature3Step(stepToShow) {
+      toggle(step3_1, false);
+      toggle(step3_2, false);
       toggle(stepToShow, true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -657,7 +838,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       charCount.className = count > 1000 ? 'text-red-500' : 'text-gray-500';
     }
     
-    // Hàm cập nhật số nhóm được chọn
+    // Hàm cập nhật số nhóm được chọn cho tính năng 2
     function updateSelectedGroupsCount() {
       const checkboxes = document.querySelectorAll('#groupList2 input[type="checkbox"]:checked');
       selectedCount.textContent = checkboxes.length;
@@ -667,6 +848,37 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
         id: cb.value,
         name: cb.getAttribute('data-name')
       }));
+    }
+    
+    // Hàm cập nhật số nhóm nguồn được chọn cho tính năng 3
+    function updateSourceGroupsCount() {
+      const checkboxes = document.querySelectorAll('#sourceGroupList input[type="checkbox"]:checked');
+      selectedSourceCount.textContent = checkboxes.length;
+      
+      sourceGroups = Array.from(checkboxes).map(cb => ({
+        id: cb.value,
+        name: cb.getAttribute('data-name')
+      }));
+      
+      updateNextButton3State();
+    }
+    
+    // Hàm cập nhật số nhóm đích được chọn cho tính năng 3
+    function updateTargetGroupsCount() {
+      const checkboxes = document.querySelectorAll('#targetGroupList input[type="checkbox"]:checked');
+      selectedTargetCount.textContent = checkboxes.length;
+      
+      targetGroups = Array.from(checkboxes).map(cb => ({
+        id: cb.value,
+        name: cb.getAttribute('data-name')
+      }));
+      
+      updateNextButton3State();
+    }
+    
+    // Cập nhật trạng thái của nút tiếp tục trong tính năng 3
+    function updateNextButton3State() {
+      nextBtn3.disabled = sourceGroups.length === 0 || targetGroups.length === 0;
     }
     
     // Hàm hiển thị thông báo thành công với tích xanh
@@ -715,6 +927,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
 
     feature3Card.addEventListener('click', () => {
       showPage(feature3Page);
+      showFeature3Step(step3_1);
     });
 
     // Nút Home
@@ -743,6 +956,18 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       toggle(scheduleInputs, false);
       updateCharCount();
       checkPostImageCount();
+      
+      showFeature3Step(step3_1);
+      toggle(resultSection3, false);
+      toggle(actionsBox3, false);
+      sourceGroupList.innerHTML = '';
+      targetGroupList.innerHTML = '';
+      sourceGroups = [];
+      targetGroups = [];
+      members = [];
+      memberCount.textContent = '0';
+      invitedCount.textContent = '0';
+      toggle(progressContainer, false);
     });
 
     // Event listener cho input file
@@ -881,7 +1106,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
           toggle(actionsBox, true);
         }
         toggle(resultSec, true);
-      } catch (err) {
+      } catch ( err) {
         console.error(err);
         alert('Quét nhóm thất bại, vui lòng thử lại.');
       } finally {
@@ -1103,11 +1328,250 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       }
     });
 
+    // ---- FEATURE 3: Quét nhóm cho mời thành viên ----
+    scanBtn3.addEventListener('click', async () => {
+      const nick = nickSelect3.value;
+      if (!nick) return alert('Vui lòng chọn một nick.');
+
+      scanBtn3.disabled = true;
+      toggle(spinner3, true);
+      overlayText.innerHTML = 'Đang quét nhóm, vui lòng chờ...';
+      toggle(overlay, true);
+      toggle(resultSection3, false);
+      toggle(actionsBox3, false);
+      sourceGroupList.innerHTML = '';
+      targetGroupList.innerHTML = '';
+      toggle(emptySourceMsg, false);
+      toggle(emptyTargetMsg, false);
+      sourceGroups = [];
+      targetGroups = [];
+
+      try {
+        const res = await fetch(scanWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick }) });
+        if (!res.ok) throw new Error('Network error');
+        const raw = await res.json();
+
+        let groups = [];
+        if (Array.isArray(raw)) {
+          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ id: i.groupId || i.groupid || i.id, name: i.name || i.groupName || 'Không tên' }));
+        } else if (raw.groups) {
+          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => typeof g === 'string' ? { id: g, name: g } : { id: g.id || g.groupId, name: g.name || g.groupName || g.id });
+        }
+
+        if (groups.length === 0) {
+          toggle(emptySourceMsg, true);
+          toggle(emptyTargetMsg, true);
+        } else {
+          // Thêm các nhóm vào danh sách nguồn
+          groups.forEach((g, index) => {
+            sourceGroupList.insertAdjacentHTML('beforeend', `
+              <div class="flex items-center gap-2 p-2 bg-white rounded border hover:bg-gray-50">
+                <input 
+                  type="checkbox" 
+                  id="source_group_${index}" 
+                  value="${g.id}" 
+                  data-name="${g.name}"
+                  class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                  onchange="updateSourceGroupsCount()"
+                >
+                <label for="source_group_${index}" class="text-sm text-gray-700 break-words flex-1 cursor-pointer">${g.name}</label>
+              </div>
+            `);
+            
+            // Thêm các nhóm vào danh sách đích
+            targetGroupList.insertAdjacentHTML('beforeend', `
+              <div class="flex items-center gap-2 p-2 bg-white rounded border hover:bg-gray-50">
+                <input 
+                  type="checkbox" 
+                  id="target_group_${index}" 
+                  value="${g.id}" 
+                  data-name="${g.name}"
+                  class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                  onchange="updateTargetGroupsCount()"
+                >
+                <label for="target_group_${index}" class="text-sm text-gray-700 break-words flex-1 cursor-pointer">${g.name}</label>
+              </div>
+            `);
+          });
+        }
+        
+        toggle(resultSection3, true);
+        toggle(actionsBox3, true);
+        updateSourceGroupsCount();
+        updateTargetGroupsCount();
+      } catch (err) {
+        console.error(err);
+        alert('Quét nhóm thất bại, vui lòng thử lại.');
+      } finally {
+        scanBtn3.disabled = false;
+        toggle(spinner3, false);
+        toggle(overlay, false);
+      }
+    });
+    
+    // ---- FEATURE 3: Chuyển sang bước 2 ----
+    nextBtn3.addEventListener('click', () => {
+      if (sourceGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm nguồn.');
+      if (targetGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm đích.');
+      
+      // Hiển thị thông tin nhóm nguồn và đích
+      const sourceNames = sourceGroups.map(g => g.name).join(', ');
+      const targetNames = targetGroups.map(g => g.name).join(', ');
+      
+      sourceGroupDisplay.textContent = `Nhóm nguồn: ${sourceNames}`;
+      targetGroupDisplay.textContent = `Nhóm đích: ${targetNames}`;
+      
+      showFeature3Step(step3_2);
+      members = [];
+      memberCount.textContent = '0';
+      invitedCount.textContent = '0';
+      toggle(progressContainer, false);
+      inviteBtn.disabled = true;
+    });
+    
+    // ---- FEATURE 3: Quay lại bước 1 ----
+    backBtn3.addEventListener('click', () => {
+      showFeature3Step(step3_1);
+    });
+    
+    // ---- FEATURE 3: Quét thành viên ----
+    scanMembersBtn.addEventListener('click', async () => {
+      const nick = nickSelect3.value;
+      
+      scanMembersBtn.disabled = true;
+      toggle(scanMembersSpinner, true);
+      overlayText.innerHTML = 'Đang quét thành viên trong nhóm, vui lòng chờ...';
+      toggle(overlay, true);
+      
+      try {
+        members = [];
+        let totalMembers = 0;
+        
+        // Quét thành viên từ các nhóm nguồn
+        for (const group of sourceGroups) {
+          overlayText.innerHTML = `Đang quét thành viên từ nhóm: ${group.name}...`;
+          
+          const res = await fetch('https://primary-production-55bc0.up.railway.app/webhook/zalo-scan-members', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nick, groupId: group.id })
+          });
+          
+          if (!res.ok) throw new Error(`Lỗi khi quét nhóm ${group.name}`);
+          
+          const data = await res.json();
+          if (data.members && Array.isArray(data.members)) {
+            // Lọc thành viên chưa có trong danh sách
+            const newMembers = data.members.filter(m => 
+              !members.some(existing => existing.id === m.id)
+            );
+            
+            members = [...members, ...newMembers];
+            totalMembers += newMembers.length;
+            memberCount.textContent = totalMembers;
+          }
+        }
+        
+        showSuccessMessage(`Đã quét được ${totalMembers} thành viên!`);
+        inviteBtn.disabled = false;
+        
+        // Nếu đã chọn tự động mời, tiến hành mời luôn
+        if (autoInvite.checked && members.length > 0) {
+          setTimeout(() => {
+            inviteBtn.click();
+          }, 1000);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Quét thành viên thất bại: ' + err.message);
+      } finally {
+        scanMembersBtn.disabled = false;
+        toggle(scanMembersSpinner, false);
+        toggle(overlay, false);
+      }
+    });
+    
+    // ---- FEATURE 3: Mời thành viên ----
+    inviteBtn.addEventListener('click', async () => {
+      if (members.length === 0) return alert('Chưa có thành viên nào được quét. Vui lòng quét thành viên trước.');
+      
+      const maxToInvite = parseInt(maxInvites.value) || 30;
+      if (maxToInvite <= 0) return alert('Số lượng mời không hợp lệ.');
+      
+      const membersToInvite = members.slice(0, maxToInvite);
+      const nick = nickSelect3.value;
+      
+      inviteBtn.disabled = true;
+      toggle(inviteSpinner, true);
+      toggle(progressContainer, true);
+      
+      let invitedSuccess = 0;
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+      
+      for (let i = 0; i < targetGroups.length; i++) {
+        const targetGroup = targetGroups[i];
+        overlayText.innerHTML = `Đang mời thành viên vào nhóm: ${targetGroup.name}...`;
+        toggle(overlay, true);
+        
+        try {
+          for (let j = 0; j < membersToInvite.length; j++) {
+            const member = membersToInvite[j];
+            const progress = Math.round(((i * membersToInvite.length + j + 1) / (targetGroups.length * membersToInvite.length)) * 100);
+            
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${progress}%`;
+            
+            try {
+              const res = await fetch(inviteWebhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  nick,
+                  groupId: targetGroup.id,
+                  memberId: member.id,
+                  memberName: member.name || 'Không tên'
+                })
+              });
+              
+              if (res.ok) {
+                invitedSuccess++;
+                invitedCount.textContent = invitedSuccess;
+              }
+              
+              // Thêm delay để tránh bị khóa tài khoản
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (memberErr) {
+              console.error(`Lỗi khi mời thành viên ${member.name || member.id}:`, memberErr);
+              // Tiếp tục với thành viên tiếp theo
+            }
+          }
+        } catch (groupErr) {
+          console.error(`Lỗi khi mời thành viên vào nhóm ${targetGroup.name}:`, groupErr);
+          alert(`Có lỗi xảy ra khi mời thành viên vào nhóm ${targetGroup.name}. Tiếp tục với nhóm tiếp theo.`);
+        }
+      }
+      
+      progressBar.style.width = '100%';
+      progressText.textContent = '100%';
+      
+      showSuccessMessage(`Đã mời thành công ${invitedSuccess} thành viên!`);
+      
+      setTimeout(() => {
+        toggle(overlay, false);
+      }, 2000);
+      
+      inviteBtn.disabled = false;
+      toggle(inviteSpinner, false);
+    });
+
     // Khởi tạo ứng dụng
     checkAuth();
     
-    // Đảm bảo updateSelectedGroupsCount có thể truy cập global
+    // Đảm bảo các hàm cập nhật có thể truy cập global
     window.updateSelectedGroupsCount = updateSelectedGroupsCount;
+    window.updateSourceGroupsCount = updateSourceGroupsCount;
+    window.updateTargetGroupsCount = updateTargetGroupsCount;
     
     // Khởi tạo các giá trị ban đầu
     updateCharCount();
