@@ -752,6 +752,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     let sourceGroups = [];
     let targetGroups = [];
     let members = [];
+    let currentIdNick = '';
 
     // Hàm hiển thị trang
     function showPage(pageToShow) {
@@ -1460,15 +1461,28 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
           if (!res.ok) throw new Error(`Lỗi khi quét nhóm ${group.name}`);
           
           const data = await res.json();
-          if (data.members && Array.isArray(data.members)) {
-            // Lọc thành viên chưa có trong danh sách
-            const newMembers = data.members.filter(m => 
-              !members.some(existing => existing.id === m.id)
-            );
-            
-            members = [...members, ...newMembers];
-            totalMembers += newMembers.length;
-            memberCount.textContent = totalMembers;
+          if (Array.isArray(data) && data.length > 0) {
+            // Lấy totalMembers và id_nick từ response
+            const groupData = data[0];
+            if (groupData.totalMembers) {
+              const memberCountFromGroup = parseInt(groupData.totalMembers) || 0;
+              totalMembers += memberCountFromGroup;
+              memberCount.textContent = totalMembers;
+              
+              // Lưu id_nick để sử dụng khi mời thành viên
+              if (groupData.id_nick) {
+                currentIdNick = groupData.id_nick;
+              }
+              
+              // Tạo danh sách thành viên giả lập để có thể mời
+              for (let i = 0; i < memberCountFromGroup; i++) {
+                members.push({
+                  id: `member_${group.id}_${i}`,
+                  name: `Thành viên ${i + 1}`,
+                  groupId: group.id
+                });
+              }
+            }
           }
         }
         
@@ -1530,7 +1544,8 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
                   nick,
                   groupId: targetGroup.id,
                   memberId: member.id,
-                  memberName: member.name || 'Không tên'
+                  memberName: member.name || 'Không tên',
+                  id_nick: currentIdNick
                 })
               });
               
