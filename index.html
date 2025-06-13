@@ -456,6 +456,69 @@
             </button>
           </div>
         </div>
+
+        <!-- STEP 3: DANH SÁCH BÀI ĐĂNG ĐÃ LÊN LỊCH -->
+        <div id="step2_3" class="hidden card w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <header class="text-center space-y-1">
+            <div class="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
+              <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-green-600 tracking-wide">Đã lên lịch đăng bài thành công!</h2>
+            <p class="text-sm text-gray-600">Bài viết của bạn đã được thêm vào danh sách lên lịch</p>
+          </header>
+
+          <div class="space-y-6">
+            <!-- Thông tin bài vừa lên lịch -->
+            <div id="newScheduledPost" class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 class="text-lg font-semibold text-green-800 mb-2 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                </svg>
+                Bài viết vừa lên lịch
+              </h3>
+              <div id="newPostDetails" class="text-sm text-green-700 space-y-1">
+                <!-- Thông tin sẽ được thêm bằng JavaScript -->
+              </div>
+            </div>
+
+            <!-- Danh sách tất cả bài đăng đã lên lịch -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Danh sách bài đăng đã lên lịch
+                <span id="scheduledPostsCount" class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+              </h3>
+              
+              <div id="scheduledPostsList" class="space-y-3 max-h-96 overflow-y-auto">
+                <div id="noScheduledPosts" class="text-center py-8 text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                  </svg>
+                  <p class="text-sm">Chưa có bài đăng nào được lên lịch</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="scheduleNewPostBtn" class="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition touch-manipulation">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+              </svg>
+              Lên lịch bài mới
+            </button>
+            <button id="backToHomeBtn" class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg transition touch-manipulation">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+              </svg>
+              Về trang chủ
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- TÍNH NĂNG 3: MỜI THÀNH VIÊN -->
@@ -648,6 +711,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     // Feature 2 elements
     const step2_1 = $('step2_1');
     const step2_2 = $('step2_2');
+    const step2_3 = $('step2_3');
     const nickSelect2 = $('nickSelect2');
     const scanBtn2 = $('scanBtn2');
     const spinner2 = $('spinner2');
@@ -702,6 +766,15 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     const publishSpinner = $('publishSpinner');
     const charCount = $('charCount');
     
+    // Scheduled posts elements
+    const newScheduledPost = $('newScheduledPost');
+    const newPostDetails = $('newPostDetails');
+    const scheduledPostsList = $('scheduledPostsList');
+    const scheduledPostsCount = $('scheduledPostsCount');
+    const noScheduledPosts = $('noScheduledPosts');
+    const scheduleNewPostBtn = $('scheduleNewPostBtn');
+    const backToHomeBtn = $('backToHomeBtn');
+    
     // Post image status elements
     const postImageStatus = $('postImageStatus');
     const postImageSuccess = $('postImageSuccess');
@@ -753,6 +826,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     let targetGroups = [];
     let members = [];
     let currentIdNick = '';
+    let scheduledPosts = JSON.parse(localStorage.getItem('scheduledPosts') || '[]');
 
     // Hàm hiển thị trang
     function showPage(pageToShow) {
@@ -768,6 +842,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     function showFeature2Step(stepToShow) {
       toggle(step2_1, false);
       toggle(step2_2, false);
+      toggle($('step2_3'), false);
       toggle(stepToShow, true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -896,6 +971,123 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       `;
     }
 
+    // Hàm lưu bài đăng đã lên lịch
+    function saveScheduledPost(postData) {
+      scheduledPosts.unshift(postData);
+      localStorage.setItem('scheduledPosts', JSON.stringify(scheduledPosts));
+      updateScheduledPostsList();
+    }
+
+    // Hàm cập nhật danh sách bài đăng đã lên lịch
+    function updateScheduledPostsList() {
+      scheduledPostsCount.textContent = scheduledPosts.length;
+      
+      if (scheduledPosts.length === 0) {
+        toggle(noScheduledPosts, true);
+        scheduledPostsList.innerHTML = noScheduledPosts.outerHTML;
+        return;
+      }
+      
+      toggle(noScheduledPosts, false);
+      scheduledPostsList.innerHTML = '';
+      
+      scheduledPosts.forEach((post, index) => {
+        const postElement = document.createElement('div');
+        postElement.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4';
+        
+        const scheduleText = post.schedule ? 
+          `Lên lịch: ${formatDateTime(post.schedule.date, post.schedule.time)}` : 
+          'Đăng ngay lập tức';
+        
+        const statusClass = post.schedule ? 'text-orange-600 bg-orange-100' : 'text-green-600 bg-green-100';
+        const statusText = post.schedule ? 'Đã lên lịch' : 'Đã đăng';
+        
+        postElement.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="font-medium text-gray-800 flex-1 mr-2">${truncateText(post.content, 50)}</h4>
+            <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">${statusText}</span>
+          </div>
+          <div class="text-sm text-gray-600 space-y-1">
+            <p><strong>Nhóm:</strong> ${post.groups.length} nhóm được chọn</p>
+            <p><strong>Ảnh:</strong> ${post.imageCount} ảnh</p>
+            <p><strong>Thời gian:</strong> ${scheduleText}</p>
+            <p><strong>Tạo lúc:</strong> ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split('T')[1].split('.')[0])}</p>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button onclick="viewPostDetails(${index})" class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition">
+              Xem chi tiết
+            </button>
+            <button onclick="deleteScheduledPost(${index})" class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition">
+              Xóa
+            </button>
+          </div>
+        `;
+        
+        scheduledPostsList.appendChild(postElement);
+      });
+    }
+
+    // Hàm hiển thị chi tiết bài đăng mới lên lịch
+    function showNewPostDetails(postData) {
+      const scheduleText = postData.schedule ? 
+        `${formatDateTime(postData.schedule.date, postData.schedule.time)}` : 
+        'Đăng ngay lập tức';
+      
+      newPostDetails.innerHTML = `
+        <p><strong>Nội dung:</strong> ${truncateText(postData.content, 100)}</p>
+        <p><strong>Số nhóm:</strong> ${postData.groups.length} nhóm</p>
+        <p><strong>Số ảnh:</strong> ${postData.imageCount} ảnh</p>
+        <p><strong>Thời gian đăng:</strong> ${scheduleText}</p>
+      `;
+    }
+
+    // Hàm cắt ngắn văn bản
+    function truncateText(text, maxLength) {
+      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    }
+
+    // Hàm định dạng ngày giờ
+    function formatDateTime(date, time) {
+      const dateObj = new Date(date + 'T' + time);
+      return dateObj.toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Hàm xem chi tiết bài đăng
+    function viewPostDetails(index) {
+      const post = scheduledPosts[index];
+      const groupNames = post.groups.map(g => g.name).join(', ');
+      const scheduleText = post.schedule ? 
+        formatDateTime(post.schedule.date, post.schedule.time) : 
+        'Đăng ngay lập tức';
+      
+      alert(`Chi tiết bài đăng:
+
+Nội dung: ${post.content}
+
+Nhóm đăng bài: ${groupNames}
+
+Số ảnh: ${post.imageCount}
+
+Thời gian đăng: ${scheduleText}
+
+Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split('T')[1].split('.')[0])}`);
+    }
+
+    // Hàm xóa bài đăng đã lên lịch
+    function deleteScheduledPost(index) {
+      if (confirm('Bạn có chắc chắn muốn xóa bài đăng này khỏi danh sách lên lịch?')) {
+        scheduledPosts.splice(index, 1);
+        localStorage.setItem('scheduledPosts', JSON.stringify(scheduledPosts));
+        updateScheduledPostsList();
+      }
+    }
+
     // Kiểm tra đăng nhập khi load trang
     function checkAuth() {
       const isLoggedIn = sessionStorage.getItem('zalo_scanner_logged_in');
@@ -946,17 +1138,6 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       checkImageCount();
       
       showFeature2Step(step2_1);
-      toggle(resultSection2, false);
-      toggle(actionsBox2, false);
-      nickSelect2.selectedIndex = 0;
-      postContent.value = '';
-      postImages.value = '';
-      groupList2.innerHTML = '';
-      selectedGroups = [];
-      enableSchedule.checked = false;
-      toggle(scheduleInputs, false);
-      updateCharCount();
-      checkPostImageCount();
       
       showFeature3Step(step3_1);
       toggle(resultSection3, false);
@@ -996,6 +1177,27 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       const checkboxes = document.querySelectorAll('#groupList2 input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = selectAllGroups.checked);
       updateSelectedGroupsCount();
+    });
+
+    // Event listeners cho trang danh sách bài đăng đã lên lịch
+    scheduleNewPostBtn.addEventListener('click', () => {
+      showFeature2Step(step2_1);
+      // Reset form
+      toggle(resultSection2, false);
+      toggle(actionsBox2, false);
+      nickSelect2.selectedIndex = 0;
+      postContent.value = '';
+      postImages.value = '';
+      groupList2.innerHTML = '';
+      selectedGroups = [];
+      enableSchedule.checked = false;
+      toggle(scheduleInputs, false);
+      updateCharCount();
+      checkPostImageCount();
+    });
+
+    backToHomeBtn.addEventListener('click', () => {
+      showPage(homePage);
     });
 
     // Toggle hiển thị mật khẩu
@@ -1305,8 +1507,26 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
         if (!res.ok) throw new Error('Post error');
         await res.json();
 
-        showSuccessMessage('Đã đăng bài thành công!');
+        // Tạo dữ liệu bài đăng để lưu vào danh sách lên lịch
+        const postData = {
+          content: text,
+          groups: selectedGroups,
+          imageCount: files.length,
+          schedule: scheduleData,
+          createdAt: new Date().toISOString(),
+          nick: nick
+        };
+
+        // Lưu bài đăng vào danh sách lên lịch
+        saveScheduledPost(postData);
         
+        // Hiển thị thông tin bài đăng mới
+        showNewPostDetails(postData);
+
+        // Chuyển đến trang hiển thị danh sách bài đăng đã lên lịch
+        showFeature2Step(step2_3);
+        
+        // Reset form
         postContent.value = '';
         postImages.value = '';
         enableSchedule.checked = false;
@@ -1314,11 +1534,8 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
         updateCharCount();
         checkPostImageCount();
 
-        setTimeout(() => {
-          toggle(overlay, false);
-          showFeature2Step(step2_1);
-          overlayText.innerHTML = 'Đang xử lý...';
-        }, 3000);
+        toggle(overlay, false);
+        overlayText.innerHTML = 'Đang xử lý...';
       } catch (err) {
         console.error(err);
         alert('Đăng bài thất bại, vui lòng thử lại.');
@@ -1587,11 +1804,14 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     window.updateSelectedGroupsCount = updateSelectedGroupsCount;
     window.updateSourceGroupsCount = updateSourceGroupsCount;
     window.updateTargetGroupsCount = updateTargetGroupsCount;
+    window.viewPostDetails = viewPostDetails;
+    window.deleteScheduledPost = deleteScheduledPost;
     
     // Khởi tạo các giá trị ban đầu
     updateCharCount();
     checkImageCount();
     checkPostImageCount();
+    updateScheduledPostsList();
   </script>
 </body>
 </html>
