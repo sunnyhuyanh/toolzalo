@@ -1700,6 +1700,58 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       checkPostImageCount();
     }
 
+    // Hàm reset state của tính năng "sử dụng bài cũ"
+    function resetOldPostFeatureState() {
+      console.log('Resetting old post feature state...');
+      
+      // Reset biến selectedOldPost
+      selectedOldPost = null;
+      
+      // Reset trạng thái card "sử dụng bài cũ"
+      const useOldPostCard = $('useOldPostCard');
+      if (useOldPostCard) {
+        useOldPostCard.classList.remove('disabled');
+        useOldPostCard.style.pointerEvents = '';
+        useOldPostCard.style.opacity = '';
+      }
+      
+      // Reset form
+      if (postContent) postContent.value = '';
+      if (postImages) postImages.value = '';
+      
+      // Reset trạng thái hiển thị ảnh
+      const postImagesInput = $('postImages');
+      const postImagesLabel = postImagesInput ? postImagesInput.previousElementSibling : null;
+      if (postImagesInput) {
+        postImagesInput.style.display = 'block';
+        postImagesInput.value = '';
+      }
+      if (postImagesLabel) {
+        postImagesLabel.style.display = 'block';
+      }
+      
+      // Xóa preview ảnh cũ nếu có
+      const oldImagesPreview = $('oldImagesPreview');
+      if (oldImagesPreview) {
+        oldImagesPreview.remove();
+      }
+      
+      // Reset trạng thái ảnh
+      const imageStatus = $('postImageStatus');
+      if (imageStatus) {
+        toggle(imageStatus, false);
+      }
+      
+      // Đóng tất cả modals liên quan
+      toggle($('oldPostModal'), false);
+      toggle($('previewModal'), false);
+      
+      // Khởi tạo lại event listener cho card "sử dụng bài cũ"
+      initializeUseOldPostCard();
+      
+      console.log('Old post feature state reset completed');
+    }
+
     // Hàm tính toán ngày tiếp theo của một thứ trong tuần
     function getNextDateForDayOfWeek(targetDayOfWeek, scheduleTime) {
       const today = new Date();
@@ -2573,6 +2625,22 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
 
     // ---- FEATURE 2: Quay lại từ step 1.5 ----
     $('backToGroupSelection').addEventListener('click', () => {
+      // Reset toàn bộ state của tính năng "sử dụng bài cũ"
+      resetOldPostFeatureState();
+      
+      // Reset lịch đăng bài
+      enableSchedule.checked = false;
+      toggle(scheduleInputs, false);
+      scheduleMode.value = 'once';
+      document.querySelectorAll('.day-checkbox').forEach(cb => {
+        cb.checked = false;
+        const timeInput = $('time_' + cb.value);
+        if (timeInput) {
+          timeInput.disabled = true;
+          timeInput.value = '';
+        }
+      });
+      
       showFeature2Step(step2_1);
     });
 
@@ -2612,22 +2680,47 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     });
 
     // ---- FEATURE 2: Chọn sử dụng bài cũ ----
-    document.addEventListener('click', (e) => {
-      const useOldPostCard = e.target.closest('#useOldPostCard');
-      if (useOldPostCard) {
-        console.log('Use old post clicked, saved posts:', savedPosts.length);
+    function initializeUseOldPostCard() {
+      const useOldPostCard = $('useOldPostCard');
+      if (!useOldPostCard) {
+        console.error('useOldPostCard element not found!');
+        return;
+      }
+      
+      console.log('Initializing useOldPostCard event listener...');
+      
+      // Xóa tất cả event listeners trước đó (nếu có)
+      const newCard = useOldPostCard.cloneNode(true);
+      useOldPostCard.parentNode.replaceChild(newCard, useOldPostCard);
+      
+      // Gắn event listener mới
+      newCard.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('=== Use old post clicked ===');
+        console.log('Saved posts length:', savedPosts.length);
         console.log('Current selectedOldPost:', selectedOldPost);
         console.log('Event target:', e.target);
-        console.log('Card element:', useOldPostCard);
+        console.log('Card element:', this);
+        console.log('Card classes:', this.className);
+        console.log('Card style.pointerEvents:', this.style.pointerEvents);
+        console.log('Card style.opacity:', this.style.opacity);
         
         // Kiểm tra xem card có bị disabled không
-        if (useOldPostCard.classList.contains('disabled') || useOldPostCard.style.pointerEvents === 'none') {
+        if (this.classList.contains('disabled') || this.style.pointerEvents === 'none') {
           console.log('Card is disabled, ignoring click');
           return;
         }
         
+        // Đảm bảo card không bị disabled
+        this.classList.remove('disabled');
+        this.style.pointerEvents = '';
+        this.style.opacity = '';
+        
         // Thêm dữ liệu mẫu nếu chưa có bài viết nào
         if (savedPosts.length === 0) {
+          console.log('No saved posts, creating sample posts...');
           // Tạo một số bài viết mẫu để test
           savedPosts = [
             {
@@ -2654,6 +2747,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             }
           ];
           localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+          updateOldPostCount();
           console.log('Created sample posts:', savedPosts);
         }
         
@@ -2663,6 +2757,64 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         console.log('About to toggle modal');
         toggle($('oldPostModal'), true);
         console.log('Modal should be visible now');
+      });
+      
+      console.log('useOldPostCard event listener initialized successfully!');
+    }
+    
+    // Backup event listener sử dụng event delegation (để đảm bảo hoạt động trong mọi trường hợp)
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('#useOldPostCard')) {
+        console.log('Backup event listener triggered for useOldPostCard');
+        const useOldPostCard = e.target.closest('#useOldPostCard');
+        
+        // Kiểm tra xem có phải click từ direct listener không (để tránh duplicate)
+        if (e.isTrusted && !e.useOldPostBackup) {
+          e.useOldPostBackup = true;
+          
+          console.log('=== Use old post clicked (backup) ===');
+          console.log('Saved posts length:', savedPosts.length);
+          
+          // Đảm bảo card không bị disabled
+          useOldPostCard.classList.remove('disabled');
+          useOldPostCard.style.pointerEvents = '';
+          useOldPostCard.style.opacity = '';
+          
+          // Thêm dữ liệu mẫu nếu chưa có bài viết nào
+          if (savedPosts.length === 0) {
+            console.log('No saved posts, creating sample posts... (backup)');
+            savedPosts = [
+              {
+                id: 'sample_1',
+                content: 'Xin chào các bạn! Hôm nay mình muốn chia sẻ một số tips hay về marketing online. Các bạn có những kinh nghiệm gì thú vị không?',
+                images: [
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjM2NmYxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggMTwvdGV4dD48L3N2Zz4=',
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOGI1Y2Y2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggMjwvdGV4dD48L3N2Zz4=',
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWM0ODk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggMzwvdGV4dD48L3N2Zz4=',
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDU5NjY5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggNDwvdGV4dD48L3N2Zz4='
+                ],
+                imageCount: 4,
+                createdAt: new Date().toISOString()
+              },
+              {
+                id: 'sample_2',
+                content: 'Chúc mọi người một ngày mới tràn đầy năng lượng! 💪✨ Hôm nay có kế hoạch gì thú vị không ạ?',
+                images: [
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjU5ZTBiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TYW5nIDE8L3RleHQ+PC9zdmc+',
+                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTBiOTgxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TYW5nIDI8L3RleHQ+PC9zdmc+'
+                ],
+                imageCount: 2,
+                createdAt: new Date(Date.now() - 86400000).toISOString()
+              }
+            ];
+            localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+            updateOldPostCount();
+          }
+          
+          // Hiển thị modal chọn bài cũ
+          showOldPostsList();
+          toggle($('oldPostModal'), true);
+        }
       }
     });
 
@@ -2892,26 +3044,8 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         // Chuyển đến trang hiển thị danh sách bài đăng đã lên lịch
         showFeature2Step(step2_3);
         
-        // Reset form hoàn toàn
-        postContent.value = '';
-        postImages.value = '';
-        selectedOldPost = null;
-        
-        // Reset trạng thái hiển thị ảnh
-        const postImagesInput = $('postImages');
-        const postImagesLabel = postImagesInput.previousElementSibling;
-        postImagesInput.style.display = 'block';
-        postImagesLabel.style.display = 'block';
-        
-        // Xóa preview ảnh cũ nếu có
-        const oldImagesPreview = $('oldImagesPreview');
-        if (oldImagesPreview) {
-          oldImagesPreview.remove();
-        }
-        
-        // Reset trạng thái ảnh
-        const imageStatus = $('postImageStatus');
-        toggle(imageStatus, false);
+        // Reset toàn bộ state của tính năng "sử dụng bài cũ"
+        resetOldPostFeatureState();
         
         // Reset schedule
         enableSchedule.checked = false;
@@ -3234,6 +3368,22 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     updateScheduledPostsList();
     updateOldPostCount();
     createSamplePosts();
+    
+    // Khởi tạo event listener cho card "sử dụng bài cũ"
+    initializeUseOldPostCard();
+    
+    // Đảm bảo state của tính năng "sử dụng bài cũ" được reset khi load trang (không cần gọi initializeUseOldPostCard lại vì đã gọi ở trên)
+    console.log('Resetting old post feature state...');
+    selectedOldPost = null;
+    const useOldPostCard = $('useOldPostCard');
+    if (useOldPostCard) {
+      useOldPostCard.classList.remove('disabled');
+      useOldPostCard.style.pointerEvents = '';
+      useOldPostCard.style.opacity = '';
+    }
+    toggle($('oldPostModal'), false);
+    toggle($('previewModal'), false);
+    console.log('Old post feature state reset completed');
   </script>
 </body>
 </html>
