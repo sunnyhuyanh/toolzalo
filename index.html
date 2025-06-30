@@ -450,7 +450,228 @@
             </div>
           </section>
         </div>
-<!-- STEP 2: SOẠN NỘI DUNG -->
+
+        <!-- STEP 1.5: CHỌN LOẠI BÀI ĐĂNG -->
+        <div id="step2_1_5" class="hidden card w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <header class="text-center space-y-3">
+            <div class="w-20 h-20 mx-auto bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mb-4">
+              <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-wide">Chọn loại bài đăng</h2>
+            <p class="text-base text-gray-600 max-w-md mx-auto">Bạn muốn tạo bài viết mới hay sử dụng lại bài viết đã lưu?</p>
+            <div id="selectedGroupsDisplay2" class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+              </svg>
+              <span id="selectedGroupsText2"></span>
+            </div>
+          </header>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Tạo bài mới -->
+            <div id="createNewPostCard" class="group cursor-pointer bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 rounded-2xl p-8 text-center space-y-6 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-blue-300">
+              <div class="w-20 h-20 mx-auto bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="space-y-3">
+                <h3 class="text-xl font-bold text-blue-900 group-hover:text-blue-800 transition-colors">Tạo bài viết mới</h3>
+                <p class="text-sm text-blue-700 leading-relaxed">Soạn nội dung mới, tải ảnh và thiết lập lịch đăng bài hoàn toàn mới</p>
+                <div class="flex items-center justify-center gap-2 text-xs text-blue-600 font-medium">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                  <span>Tùy chỉnh hoàn toàn</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sử dụng bài cũ -->
+            <div id="useOldPostCard" class="group cursor-pointer bg-gradient-to-br from-purple-50 to-pink-100 border-2 border-purple-200 rounded-2xl p-8 text-center space-y-6 hover:shadow-xl hover:scale-105 transition-all duration-300 hover:border-purple-300">
+              <div class="w-20 h-20 mx-auto bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zM3 15a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-1z" clip-rule="evenodd"/>
+                  <path d="M10.5 2A1.5 1.5 0 0012 3.5v11a3.5 3.5 0 11-7 0V6.5a1.5 1.5 0 013 0V14a.5.5 0 001 0V3.5A1.5 1.5 0 0110.5 2z"/>
+                </svg>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center justify-center gap-2">
+                  <h3 class="text-xl font-bold text-purple-900 group-hover:text-purple-800 transition-colors">Sử dụng bài cũ</h3>
+                  <span id="oldPostCount" class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-1 rounded-full">0</span>
+                </div>
+                <p class="text-sm text-purple-700 leading-relaxed">Chọn từ các bài viết đã lưu trước đó để đăng lại nhanh chóng</p>
+                <div class="flex items-center justify-center gap-2 text-xs text-purple-600 font-medium">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                  </svg>
+                  <span>Tiết kiệm thời gian</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 pt-4">
+            <button id="backToGroupSelection" class="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition touch-manipulation">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+              </svg>
+              Quay lại
+            </button>
+          </div>
+        </div>
+
+        <!-- MODAL: CHỌN BÀI CŨ -->
+        <div id="oldPostModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden transform transition-all duration-300 scale-95 opacity-0" style="animation: modalOpen 0.3s ease-out forwards;">
+            <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-6 py-5 relative overflow-hidden">
+              <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+              <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                    <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zM3 15a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-1z" clip-rule="evenodd"/>
+                      <path d="M10.5 2A1.5 1.5 0 0012 3.5v11a3.5 3.5 0 11-7 0V6.5a1.5 1.5 0 013 0V14a.5.5 0 001 0V3.5A1.5 1.5 0 0110.5 2z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-bold text-white mb-1">Thư viện bài viết</h3>
+                    <p class="text-white/80 text-sm">Chọn bài viết đã lưu để đăng lại</p>
+                  </div>
+                </div>
+                <button id="closeOldPostModal" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm hover:scale-105">
+                  <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+              <div id="oldPostsList" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <div id="noOldPosts" class="col-span-full text-center py-16 text-gray-500">
+                  <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zM3 15a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-1z" clip-rule="evenodd"/>
+                      <path d="M10.5 2A1.5 1.5 0 0012 3.5v11a3.5 3.5 0 11-7 0V6.5a1.5 1.5 0 013 0V14a.5.5 0 001 0V3.5A1.5 1.5 0 0110.5 2z"/>
+                    </svg>
+                  </div>
+                  <h4 class="text-xl font-semibold text-gray-600 mb-3">Chưa có bài viết nào</h4>
+                  <p class="text-gray-500 max-w-md mx-auto">Các bài viết đã tạo sẽ được lưu tự động và hiển thị ở đây để bạn có thể sử dụng lại</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style>
+          @keyframes modalOpen {
+            from {
+              opacity: 0;
+              transform: scale(0.9) translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+          
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+          }
+          
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
+            border-radius: 4px;
+          }
+          
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #94a3b8, #64748b);
+          }
+          
+          .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+        </style>
+
+        <!-- MODAL: XEM TRƯỚC BÀI VIẾT -->
+        <div id="previewModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div class="bg-gray-100 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden" style="max-width: 400px;">
+            <!-- Header giống Zalo -->
+            <div class="bg-white px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span class="text-white font-bold text-sm">A</span>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-900 text-sm">anh Thanh nguyên Đức</h4>
+                  <p class="text-xs text-gray-500">12:01</p>
+                </div>
+              </div>
+              <button id="closePreviewModal" class="w-8 h-8 hover:bg-gray-100 rounded-lg flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bg-white overflow-y-auto max-h-[calc(90vh-160px)]">
+              <!-- Nội dung bài viết -->
+              <div class="p-4">
+                <div id="previewContent" class="text-gray-800 mb-3 leading-relaxed whitespace-pre-wrap text-sm"></div>
+                
+                <!-- Grid ảnh giống Zalo -->
+                <div id="previewImages" class="grid gap-1 rounded-lg overflow-hidden"></div>
+              </div>
+              
+              <!-- Action buttons giống Zalo -->
+              <div class="px-4 py-3 border-t border-gray-100">
+                <div class="flex items-center justify-around">
+                  <button class="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    <span class="text-sm font-medium">Thích</span>
+                  </button>
+                  <button class="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    <span class="text-sm font-medium">Bình luận</span>
+                  </button>
+                  <button class="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                    </svg>
+                    <span class="text-sm font-medium">Chia sẻ</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Bottom action buttons -->
+            <div class="bg-white border-t border-gray-200 p-4 flex gap-3">
+              <button id="selectThisPost" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-all text-sm">
+                Chọn bài viết này
+              </button>
+              <button id="cancelPreview" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all text-sm">
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: SOẠN NỘI DUNG -->
         <div id="step2_2" class="hidden card w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 sm:space-y-8">
           <header class="text-center space-y-1">
             <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-wide">Soạn nội dung đăng bài</h2>
@@ -1010,6 +1231,8 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     let members = [];
     let currentIdNick = '';
     let scheduledPosts = JSON.parse(localStorage.getItem('scheduledPosts') || '[]');
+    let savedPosts = JSON.parse(localStorage.getItem('savedPosts') || '[]'); // Lưu tối đa 5 bài
+    let selectedOldPost = null;
 
     // Hàm hiển thị trang
     function showPage(pageToShow) {
@@ -1024,6 +1247,7 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     // Hàm hiển thị step cho feature 2
     function showFeature2Step(stepToShow) {
       toggle(step2_1, false);
+      toggle($('step2_1_5'), false);
       toggle(step2_2, false);
       toggle($('step2_3'), false);
       toggle(stepToShow, true);
@@ -1159,6 +1383,321 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       scheduledPosts.unshift(postData);
       localStorage.setItem('scheduledPosts', JSON.stringify(scheduledPosts));
       updateScheduledPostsList();
+    }
+
+    // Hàm lưu bài viết để tái sử dụng (tối đa 5 bài)
+    function savePostForReuse(postData) {
+      // Tìm xem bài viết đã tồn tại chưa (dựa trên nội dung)
+      const existingIndex = savedPosts.findIndex(post => post.content === postData.content);
+      
+      if (existingIndex !== -1) {
+        // Nếu đã tồn tại, cập nhật thời gian và đưa lên đầu
+        savedPosts.splice(existingIndex, 1);
+      }
+      
+      // Thêm bài viết mới vào đầu danh sách
+      savedPosts.unshift({
+        id: Date.now(),
+        content: postData.content,
+        images: postData.images || [],
+        imageCount: postData.imageCount || 0,
+        createdAt: new Date().toISOString(),
+        nick: postData.nick
+      });
+      
+      // Giữ tối đa 5 bài viết
+      if (savedPosts.length > 5) {
+        savedPosts = savedPosts.slice(0, 5);
+      }
+      
+      localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+      updateOldPostCount();
+    }
+
+    // Hàm cập nhật số lượng bài cũ
+    function updateOldPostCount() {
+      const oldPostCount = $('oldPostCount');
+      if (oldPostCount) {
+        oldPostCount.textContent = savedPosts.length;
+      }
+    }
+
+    // Hàm hiển thị danh sách bài cũ
+    function showOldPostsList() {
+      const oldPostsList = $('oldPostsList');
+      const noOldPosts = $('noOldPosts');
+      
+      if (savedPosts.length === 0) {
+        toggle(noOldPosts, true);
+        oldPostsList.innerHTML = noOldPosts.outerHTML;
+        return;
+      }
+      
+      toggle(noOldPosts, false);
+      oldPostsList.innerHTML = '';
+      
+      savedPosts.forEach((post, index) => {
+        const postElement = document.createElement('div');
+        postElement.className = 'bg-gradient-to-br from-white via-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] hover:border-purple-300 group';
+        postElement.dataset.postIndex = index;
+        
+        const createdDate = new Date(post.createdAt).toLocaleString('vi-VN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        // Tạo preview ảnh mini
+        let imagePreview = '';
+        if (post.images && post.images.length > 0) {
+          const firstImage = post.images[0];
+          imagePreview = `
+            <div class="w-14 h-14 rounded-lg overflow-hidden border-2 border-white shadow-md">
+              <img src="${firstImage}" alt="Preview" class="w-full h-full object-cover">
+            </div>
+          `;
+        }
+        
+        postElement.innerHTML = `
+          <div class="flex gap-4 mb-4">
+            ${imagePreview}
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-gray-800 text-lg mb-2 line-clamp-2 group-hover:text-purple-700 transition-colors">${truncateText(post.content, 100)}</h4>
+              <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                <span class="flex items-center gap-1 bg-blue-100 px-2 py-1 rounded-full">
+                  <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                  </svg>
+                  <span class="text-blue-700 font-medium">${post.imageCount} ảnh</span>
+                </span>
+                <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
+                  <svg class="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                  </svg>
+                  <span class="text-gray-700 font-medium">${createdDate}</span>
+                </span>
+              </div>
+            </div>
+            <div class="flex flex-col justify-center">
+              <span class="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-sm whitespace-nowrap">
+                ✓ Đã lưu
+              </span>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button data-action="preview" data-index="${index}" class="flex-1 text-sm bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-4 py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+              <span class="flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                </svg>
+                Xem trước
+              </span>
+            </button>
+            <button data-action="select" data-index="${index}" class="flex-1 text-sm bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold px-4 py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+              <span class="flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Chọn bài này
+              </span>
+            </button>
+          </div>
+        `;
+        
+        oldPostsList.appendChild(postElement);
+      });
+    }
+
+    // Hàm xem trước bài cũ
+    function previewOldPost(index) {
+      const post = savedPosts[index];
+      selectedOldPost = post;
+      
+      // Hiển thị nội dung trong modal preview
+      $('previewContent').textContent = post.content;
+      
+      // Hiển thị ảnh theo layout Zalo
+      const previewImages = $('previewImages');
+      previewImages.innerHTML = '';
+      
+      if (post.images && post.images.length > 0) {
+        const imageCount = post.images.length;
+        
+        // Layout ảnh giống Zalo
+        if (imageCount === 1) {
+          previewImages.className = 'grid grid-cols-1 gap-1 rounded-lg overflow-hidden';
+          previewImages.innerHTML = `
+            <img src="${post.images[0]}" alt="Ảnh 1" class="w-full h-64 object-cover">
+          `;
+        } else if (imageCount === 2) {
+          previewImages.className = 'grid grid-cols-2 gap-1 rounded-lg overflow-hidden';
+          post.images.forEach((imageBase64, idx) => {
+            previewImages.innerHTML += `
+              <img src="${imageBase64}" alt="Ảnh ${idx + 1}" class="w-full h-32 object-cover">
+            `;
+          });
+        } else if (imageCount === 3) {
+          previewImages.className = 'grid gap-1 rounded-lg overflow-hidden';
+          previewImages.innerHTML = `
+            <div class="grid grid-cols-2 gap-1">
+              <img src="${post.images[0]}" alt="Ảnh 1" class="w-full h-32 object-cover">
+              <div class="grid gap-1">
+                <img src="${post.images[1]}" alt="Ảnh 2" class="w-full h-15 object-cover">
+                <img src="${post.images[2]}" alt="Ảnh 3" class="w-full h-15 object-cover">
+              </div>
+            </div>
+          `;
+        } else if (imageCount === 4) {
+          previewImages.className = 'grid grid-cols-2 gap-1 rounded-lg overflow-hidden';
+          post.images.forEach((imageBase64, idx) => {
+            previewImages.innerHTML += `
+              <img src="${imageBase64}" alt="Ảnh ${idx + 1}" class="w-full h-32 object-cover">
+            `;
+          });
+        } else {
+          // Hiển thị 4 ảnh đầu với indicator "+X" cho ảnh cuối nếu có nhiều hơn 4
+          previewImages.className = 'grid grid-cols-2 gap-1 rounded-lg overflow-hidden';
+          for (let i = 0; i < Math.min(4, imageCount); i++) {
+            if (i === 3 && imageCount > 4) {
+              previewImages.innerHTML += `
+                <div class="relative">
+                  <img src="${post.images[i]}" alt="Ảnh ${i + 1}" class="w-full h-32 object-cover">
+                  <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">+${imageCount - 4}</span>
+                  </div>
+                </div>
+              `;
+            } else {
+              previewImages.innerHTML += `
+                <img src="${post.images[i]}" alt="Ảnh ${i + 1}" class="w-full h-32 object-cover">
+              `;
+            }
+          }
+        }
+      }
+      
+      // Hiển thị modal preview
+      toggle($('previewModal'), true);
+    }
+
+    // Hàm chọn bài cũ
+    function selectOldPost(index) {
+      selectedOldPost = savedPosts[index];
+      toggle($('oldPostModal'), false);
+      
+      // Chuyển đến bước lên lịch với dữ liệu bài cũ
+      showFeature2Step(step2_2);
+      
+      // Điền dữ liệu vào form
+      postContent.value = selectedOldPost.content;
+      
+      // Xử lý hiển thị ảnh từ bài cũ
+      if (selectedOldPost.images && selectedOldPost.images.length > 0) {
+        // Tạo thông báo và hiển thị ảnh từ bài cũ
+        const imageStatus = $('postImageStatus');
+        const postImageSuccess = $('postImageSuccess');
+        const postImageSuccessText = $('postImageSuccessText');
+        
+        toggle(postImageSuccess, true);
+        toggle(imageStatus, true);
+        postImageSuccessText.innerHTML = `✓ Sử dụng ${selectedOldPost.imageCount} ảnh từ bài viết đã lưu`;
+        
+        // Ẩn các thông báo khác
+        toggle($('postImageWarning'), false);
+        toggle($('postImageError'), false);
+        
+        // Ẩn input file và hiển thị preview ảnh từ bài cũ
+        const postImagesInput = $('postImages');
+        const postImagesLabel = postImagesInput.previousElementSibling;
+        
+        // Ẩn input file vì đã có ảnh từ bài cũ
+        postImagesInput.style.display = 'none';
+        postImagesLabel.style.display = 'none';
+        
+        // Tạo container hiển thị ảnh từ bài cũ
+        let oldImagesPreview = $('oldImagesPreview');
+        if (!oldImagesPreview) {
+          oldImagesPreview = document.createElement('div');
+          oldImagesPreview.id = 'oldImagesPreview';
+          postImagesInput.parentNode.insertBefore(oldImagesPreview, imageStatus);
+        }
+        
+        oldImagesPreview.innerHTML = `
+          <div class="border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div>
+                <h4 class="font-semibold text-green-800">Ảnh từ bài viết đã lưu</h4>
+                <p class="text-sm text-green-600">${selectedOldPost.imageCount} ảnh sẽ được sử dụng</p>
+              </div>
+                             <button data-action="switchToNewImages" class="ml-auto text-sm bg-white border border-green-300 text-green-700 px-3 py-1 rounded-lg hover:bg-green-50 transition-colors">
+                 Đổi ảnh khác
+               </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              ${selectedOldPost.images.map((imageBase64, idx) => `
+                <div class="relative group">
+                  <img src="${imageBase64}" alt="Ảnh ${idx + 1}" class="w-full h-20 object-cover rounded-lg border border-green-200">
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg flex items-center justify-center">
+                    <span class="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">Ảnh ${idx + 1}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        // Nếu không có ảnh, hiển thị input file bình thường
+        const postImagesInput = $('postImages');
+        const postImagesLabel = postImagesInput.previousElementSibling;
+        postImagesInput.style.display = 'block';
+        postImagesLabel.style.display = 'block';
+        
+        // Xóa preview ảnh cũ nếu có
+        const oldImagesPreview = $('oldImagesPreview');
+        if (oldImagesPreview) {
+          oldImagesPreview.remove();
+        }
+      }
+      
+      updateCharCount();
+      
+      // Cập nhật hiển thị nhóm đã chọn
+      const groupNames = selectedGroups.map(g => g.name).join(', ');
+      selectedGroupsDisplay.textContent = `Sẽ đăng bài vào ${selectedGroups.length} nhóm: ${groupNames}`;
+    }
+
+    // Hàm chuyển đổi sang tải ảnh mới
+    function switchToNewImages() {
+      selectedOldPost = null;
+      
+      // Hiển thị lại input file
+      const postImagesInput = $('postImages');
+      const postImagesLabel = postImagesInput.previousElementSibling;
+      postImagesInput.style.display = 'block';
+      postImagesLabel.style.display = 'block';
+      
+      // Xóa preview ảnh cũ
+      const oldImagesPreview = $('oldImagesPreview');
+      if (oldImagesPreview) {
+        oldImagesPreview.remove();
+      }
+      
+      // Reset trạng thái ảnh
+      const imageStatus = $('postImageStatus');
+      toggle(imageStatus, false);
+      
+      // Clear input file
+      postImagesInput.value = '';
+      checkPostImageCount();
     }
 
     // Hàm tính toán ngày tiếp theo của một thứ trong tuần
@@ -1554,6 +2093,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       postImages.value = '';
       groupList2.innerHTML = '';
       selectedGroups = [];
+      selectedOldPost = null;
       enableSchedule.checked = false;
       toggle(scheduleInputs, false);
       scheduleMode.value = 'once';
@@ -1977,18 +2517,198 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       }
     });
 
-    // ---- FEATURE 2: Chuyển sang soạn nội dung ----
+    // ---- FEATURE 2: Chuyển sang bước chọn loại bài đăng ----
     nextBtn2.addEventListener('click', () => {
       if (selectedGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm.');
       
       const groupNames = selectedGroups.map(g => g.name).join(', ');
-      selectedGroupsDisplay.textContent = `Sẽ đăng bài vào ${selectedGroups.length} nhóm: ${groupNames}`;
-      showFeature2Step(step2_2);
+      $('selectedGroupsText2').textContent = `${selectedGroups.length} nhóm được chọn: ${groupNames}`;
+      
+      // Cập nhật số lượng bài cũ
+      updateOldPostCount();
+      
+      showFeature2Step($('step2_1_5'));
     });
 
-    // ---- FEATURE 2: Quay lại ----
+    // ---- FEATURE 2: Quay lại từ step 2 ----
     backBtn2.addEventListener('click', () => {
+      console.log('Back button clicked, resetting form state');
+      
+      // Reset selectedOldPost khi quay lại
+      selectedOldPost = null;
+      
+      // Reset trạng thái hiển thị ảnh
+      const postImagesInput = $('postImages');
+      const postImagesLabel = postImagesInput.previousElementSibling;
+      if (postImagesInput) {
+        postImagesInput.style.display = 'block';
+        postImagesInput.value = '';
+      }
+      if (postImagesLabel) {
+        postImagesLabel.style.display = 'block';
+      }
+      
+      // Xóa preview ảnh cũ nếu có
+      const oldImagesPreview = $('oldImagesPreview');
+      if (oldImagesPreview) {
+        oldImagesPreview.remove();
+      }
+      
+      // Reset trạng thái ảnh
+      const imageStatus = $('postImageStatus');
+      if (imageStatus) {
+        toggle(imageStatus, false);
+      }
+      
+      // Reset form content
+      if (postContent) {
+        postContent.value = '';
+      }
+      
+      // Cập nhật lại số lượng bài cũ
+      updateOldPostCount();
+      
+      showFeature2Step($('step2_1_5'));
+    });
+
+    // ---- FEATURE 2: Quay lại từ step 1.5 ----
+    $('backToGroupSelection').addEventListener('click', () => {
       showFeature2Step(step2_1);
+    });
+
+    // ---- FEATURE 2: Chọn tạo bài mới ----
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#createNewPostCard')) {
+        selectedOldPost = null;
+        showFeature2Step(step2_2);
+        
+        // Reset form
+        postContent.value = '';
+        postImages.value = '';
+        
+        // Hiển thị lại input file nếu đang ẩn
+        const postImagesInput = $('postImages');
+        const postImagesLabel = postImagesInput.previousElementSibling;
+        postImagesInput.style.display = 'block';
+        postImagesLabel.style.display = 'block';
+        
+        // Xóa preview ảnh cũ nếu có
+        const oldImagesPreview = $('oldImagesPreview');
+        if (oldImagesPreview) {
+          oldImagesPreview.remove();
+        }
+        
+        // Reset trạng thái ảnh
+        const imageStatus = $('postImageStatus');
+        toggle(imageStatus, false);
+        
+        checkPostImageCount();
+        updateCharCount();
+        
+        // Cập nhật hiển thị nhóm đã chọn
+        const groupNames = selectedGroups.map(g => g.name).join(', ');
+        selectedGroupsDisplay.textContent = `Sẽ đăng bài vào ${selectedGroups.length} nhóm: ${groupNames}`;
+      }
+    });
+
+    // ---- FEATURE 2: Chọn sử dụng bài cũ ----
+    document.addEventListener('click', (e) => {
+      const useOldPostCard = e.target.closest('#useOldPostCard');
+      if (useOldPostCard) {
+        console.log('Use old post clicked, saved posts:', savedPosts.length);
+        console.log('Current selectedOldPost:', selectedOldPost);
+        console.log('Event target:', e.target);
+        console.log('Card element:', useOldPostCard);
+        
+        // Kiểm tra xem card có bị disabled không
+        if (useOldPostCard.classList.contains('disabled') || useOldPostCard.style.pointerEvents === 'none') {
+          console.log('Card is disabled, ignoring click');
+          return;
+        }
+        
+        // Thêm dữ liệu mẫu nếu chưa có bài viết nào
+        if (savedPosts.length === 0) {
+          // Tạo một số bài viết mẫu để test
+          savedPosts = [
+            {
+              id: 'sample_1',
+              content: 'Xin chào các bạn! Hôm nay mình muốn chia sẻ một số tips hay về marketing online. Các bạn có những kinh nghiệm gì thú vị không?',
+              images: [
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjM2NmYxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggMTwvdGV4dD48L3N2Zz4=',
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOGI1Y2Y2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggMjwvdGV4dD48L3N2Zz4=',
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWM0ODk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggMzwvdGV4dD48L3N2Zz4=',
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDU5NjY5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5B4bqjbmggNDwvdGV4dD48L3N2Zz4='
+              ],
+              imageCount: 4,
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 'sample_2',
+              content: 'Chúc mọi người một ngày mới tràn đầy năng lượng! 💪✨ Hôm nay có kế hoạch gì thú vị không ạ?',
+              images: [
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjU5ZTBiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TYW5nIDE8L3RleHQ+PC9zdmc+',
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTBiOTgxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TYW5nIDI8L3RleHQ+PC9zdmc+'
+              ],
+              imageCount: 2,
+              createdAt: new Date(Date.now() - 86400000).toISOString() // 1 ngày trước
+            }
+          ];
+          localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+          console.log('Created sample posts:', savedPosts);
+        }
+        
+        // Hiển thị modal chọn bài cũ
+        console.log('About to show old posts list');
+        showOldPostsList();
+        console.log('About to toggle modal');
+        toggle($('oldPostModal'), true);
+        console.log('Modal should be visible now');
+      }
+    });
+
+    // ---- MODAL EVENTS ----
+    document.addEventListener('click', (e) => {
+      // Đóng modal chọn bài cũ
+      if (e.target.closest('#closeOldPostModal')) {
+        toggle($('oldPostModal'), false);
+      }
+      
+      // Đóng modal xem trước
+      if (e.target.closest('#closePreviewModal')) {
+        toggle($('previewModal'), false);
+      }
+      
+      // Chọn bài viết từ preview
+      if (e.target.closest('#selectThisPost')) {
+        if (selectedOldPost) {
+          toggle($('previewModal'), false);
+          selectOldPost(savedPosts.findIndex(post => post.id === selectedOldPost.id));
+        }
+      }
+      
+      // Hủy preview
+      if (e.target.closest('#cancelPreview')) {
+        toggle($('previewModal'), false);
+        selectedOldPost = null;
+      }
+      
+      // Xử lý các nút trong danh sách bài cũ và nút đổi ảnh
+      const actionButton = e.target.closest('[data-action]');
+      if (actionButton) {
+        const action = actionButton.dataset.action;
+        const index = parseInt(actionButton.dataset.index);
+        
+        if (action === 'preview') {
+          console.log('Preview post at index:', index);
+          previewOldPost(index);
+        } else if (action === 'select') {
+          console.log('Select post at index:', index);
+          selectOldPost(index);
+        } else if (action === 'switchToNewImages') {
+          console.log('Switch to new images');
+          switchToNewImages();
+        }
+      }
     });
 
     // ---- FEATURE 2: Đăng bài ----
@@ -1998,8 +2718,12 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       const files = postImages.files;
       
       if (!text) return alert('Vui lòng nhập nội dung bài viết.');
-      if (files.length !== 4) return alert('Vui lòng tải đúng 4 ảnh.');
       if (selectedGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm.');
+      
+      // Kiểm tra ảnh: nếu là bài cũ thì không cần tải ảnh mới, nếu là bài mới thì cần 4 ảnh
+      if (!selectedOldPost && files.length !== 4) {
+        return alert('Vui lòng tải đúng 4 ảnh cho bài viết mới.');
+      }
 
       let schedulesData = [];
       
@@ -2066,9 +2790,19 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           formData.append('text', text);
           formData.append('groups', JSON.stringify(selectedGroups));
           
-          Array.from(files).forEach((f, idx) => {
-            formData.append('image' + (idx + 1), f);
-          });
+          // Xử lý ảnh: nếu là bài cũ thì gửi ảnh base64, nếu là bài mới thì gửi file
+          if (selectedOldPost && selectedOldPost.images) {
+            // Gửi ảnh từ bài cũ (base64)
+            selectedOldPost.images.forEach((imageBase64, idx) => {
+              formData.append('imageBase64_' + (idx + 1), imageBase64);
+            });
+            formData.append('useOldImages', 'true');
+          } else {
+            // Gửi ảnh mới
+            Array.from(files).forEach((f, idx) => {
+              formData.append('image' + (idx + 1), f);
+            });
+          }
           
           if (schedule.type !== 'immediate') {
             // Format schedule data for webhook
@@ -2116,7 +2850,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         const postData = {
           content: text,
           groups: selectedGroups,
-          imageCount: files.length,
+          imageCount: selectedOldPost ? selectedOldPost.imageCount : files.length,
           schedules: schedulesData.filter(s => s.type !== 'immediate'),
           totalSchedules: schedulesData.length,
           successCount: successCount,
@@ -2126,6 +2860,31 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
 
         // Lưu bài đăng vào danh sách lên lịch
         saveScheduledPost(postData);
+
+        // Nếu là bài mới, lưu vào danh sách để tái sử dụng
+        if (!selectedOldPost && files.length > 0) {
+          // Chuyển đổi ảnh thành base64 để lưu
+          const imagePromises = Array.from(files).map(file => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsDataURL(file);
+            });
+          });
+          
+          try {
+            const imageBase64Array = await Promise.all(imagePromises);
+            const postForReuse = {
+              content: text,
+              images: imageBase64Array,
+              imageCount: files.length,
+              nick: nick
+            };
+            savePostForReuse(postForReuse);
+          } catch (err) {
+            console.error('Lỗi khi lưu ảnh:', err);
+          }
+        }
         
         // Hiển thị thông tin bài đăng mới
         showNewPostDetails(postData);
@@ -2133,9 +2892,28 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         // Chuyển đến trang hiển thị danh sách bài đăng đã lên lịch
         showFeature2Step(step2_3);
         
-        // Reset form
+        // Reset form hoàn toàn
         postContent.value = '';
         postImages.value = '';
+        selectedOldPost = null;
+        
+        // Reset trạng thái hiển thị ảnh
+        const postImagesInput = $('postImages');
+        const postImagesLabel = postImagesInput.previousElementSibling;
+        postImagesInput.style.display = 'block';
+        postImagesLabel.style.display = 'block';
+        
+        // Xóa preview ảnh cũ nếu có
+        const oldImagesPreview = $('oldImagesPreview');
+        if (oldImagesPreview) {
+          oldImagesPreview.remove();
+        }
+        
+        // Reset trạng thái ảnh
+        const imageStatus = $('postImageStatus');
+        toggle(imageStatus, false);
+        
+        // Reset schedule
         enableSchedule.checked = false;
         toggle(scheduleInputs, false);
         scheduleMode.value = 'once';
@@ -2422,12 +3200,40 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     window.updateTargetGroupsCount = updateTargetGroupsCount;
     window.viewPostDetails = viewPostDetails;
     window.deleteScheduledPost = deleteScheduledPost;
+    window.previewOldPost = previewOldPost;
+    window.selectOldPost = selectOldPost;
     
+    // Tạo bài mẫu để test (chỉ nếu chưa có bài nào)
+    function createSamplePosts() {
+      if (savedPosts.length === 0) {
+        const samplePosts = [
+          {
+            id: Date.now() - 1000,
+            content: "Dell inspiron 5420 like New ace ứng ib card em ak 0962 591 551\n- I5-1240P / 16gb / 512gb / 14ing 2.2K",
+            images: [
+              "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+              "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+              "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+              "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+            ],
+            imageCount: 4,
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            nick: "test"
+          }
+        ];
+        
+        savedPosts = samplePosts;
+        localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+      }
+    }
+
     // Khởi tạo các giá trị ban đầu
     updateCharCount();
     checkImageCount();
     checkPostImageCount();
     updateScheduledPostsList();
+    updateOldPostCount();
+    createSamplePosts();
   </script>
 </body>
 </html>
