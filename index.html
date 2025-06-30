@@ -1084,7 +1084,13 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
     const ADMIN_PASSWORD = 'nguyenduc139@';
 
     const $ = id => document.getElementById(id);
-    const toggle = (el, show) => el.classList[show ? 'remove' : 'add']('hidden');
+    const toggle = (el, show) => {
+      if (!el) {
+        console.warn('Toggle called with null element');
+        return;
+      }
+      el.classList[show ? 'remove' : 'add']('hidden');
+    };
 
     // Elements
     const loginPage = $('loginPage');
@@ -1427,13 +1433,24 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       const oldPostsList = $('oldPostsList');
       const noOldPosts = $('noOldPosts');
       
-      if (savedPosts.length === 0) {
-        toggle(noOldPosts, true);
-        oldPostsList.innerHTML = noOldPosts.outerHTML;
+      if (!oldPostsList) {
+        console.error('oldPostsList element not found!');
         return;
       }
       
-      toggle(noOldPosts, false);
+      if (savedPosts.length === 0) {
+        if (noOldPosts) {
+          toggle(noOldPosts, true);
+          oldPostsList.innerHTML = noOldPosts.outerHTML;
+        } else {
+          oldPostsList.innerHTML = '<div class="col-span-full text-center py-16 text-gray-500">Chưa có bài viết nào</div>';
+        }
+        return;
+      }
+      
+      if (noOldPosts) {
+        toggle(noOldPosts, false);
+      }
       oldPostsList.innerHTML = '';
       
       savedPosts.forEach((post, index) => {
@@ -1700,6 +1717,26 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       checkPostImageCount();
     }
 
+    // Hàm kiểm tra và đảm bảo tất cả elements quan trọng tồn tại
+    function ensureCriticalElementsExist() {
+      const criticalElements = [
+        'useOldPostCard',
+        'oldPostModal', 
+        'previewModal',
+        'oldPostsList'
+      ];
+      
+      let allExist = true;
+      criticalElements.forEach(id => {
+        if (!$(id)) {
+          console.error(`Critical element missing: ${id}`);
+          allExist = false;
+        }
+      });
+      
+      return allExist;
+    }
+
     // Hàm reset state của tính năng "sử dụng bài cũ"
     function resetOldPostFeatureState() {
       console.log('Resetting old post feature state...');
@@ -1745,9 +1782,6 @@ const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zal
       // Đóng tất cả modals liên quan
       toggle($('oldPostModal'), false);
       toggle($('previewModal'), false);
-      
-      // Khởi tạo lại event listener cho card "sử dụng bài cũ"
-      initializeUseOldPostCard();
       
       console.log('Old post feature state reset completed');
     }
@@ -2689,12 +2723,14 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       
       console.log('Initializing useOldPostCard event listener...');
       
-      // Xóa tất cả event listeners trước đó (nếu có)
-      const newCard = useOldPostCard.cloneNode(true);
-      useOldPostCard.parentNode.replaceChild(newCard, useOldPostCard);
+      // Đánh dấu đã khởi tạo để tránh khởi tạo lại
+      if (useOldPostCard.dataset.initialized === 'true') {
+        console.log('useOldPostCard already initialized, skipping...');
+        return;
+      }
       
       // Gắn event listener mới
-      newCard.addEventListener('click', function(e) {
+      useOldPostCard.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
@@ -2759,18 +2795,21 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         console.log('Modal should be visible now');
       });
       
+      // Đánh dấu đã khởi tạo
+      useOldPostCard.dataset.initialized = 'true';
       console.log('useOldPostCard event listener initialized successfully!');
     }
     
     // Backup event listener sử dụng event delegation (để đảm bảo hoạt động trong mọi trường hợp)
     document.addEventListener('click', function(e) {
       if (e.target.closest('#useOldPostCard')) {
-        console.log('Backup event listener triggered for useOldPostCard');
         const useOldPostCard = e.target.closest('#useOldPostCard');
         
-        // Kiểm tra xem có phải click từ direct listener không (để tránh duplicate)
-        if (e.isTrusted && !e.useOldPostBackup) {
-          e.useOldPostBackup = true;
+        // Chỉ dùng backup khi direct listener không hoạt động (kiểm tra sau 100ms)
+        if (useOldPostCard.dataset.initialized !== 'true') {
+          console.log('Direct listener not initialized, using backup event listener');
+          e.preventDefault();
+          e.stopPropagation();
           
           console.log('=== Use old post clicked (backup) ===');
           console.log('Saved posts length:', savedPosts.length);
@@ -2814,6 +2853,8 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           // Hiển thị modal chọn bài cũ
           showOldPostsList();
           toggle($('oldPostModal'), true);
+        } else {
+          console.log('Direct listener already initialized, ignoring backup');
         }
       }
     });
@@ -3369,8 +3410,12 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     updateOldPostCount();
     createSamplePosts();
     
-    // Khởi tạo event listener cho card "sử dụng bài cũ"
-    initializeUseOldPostCard();
+    // Kiểm tra elements quan trọng và khởi tạo event listener cho card "sử dụng bài cũ"
+    if (ensureCriticalElementsExist()) {
+      initializeUseOldPostCard();
+    } else {
+      console.error('Cannot initialize useOldPostCard due to missing critical elements');
+    }
     
     // Đảm bảo state của tính năng "sử dụng bài cũ" được reset khi load trang (không cần gọi initializeUseOldPostCard lại vì đã gọi ở trên)
     console.log('Resetting old post feature state...');
