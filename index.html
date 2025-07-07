@@ -325,7 +325,7 @@
                 <option value="test">test</option>
                 <option value="Dương Nguyễn">Dương Nguyễn</option>
                 <option value="Đức Phòng">Đức Phòng</option>
-                <option value="Khánh Duy">Khánh Duy></option>
+                <option value="Khánh Duy">Khánh Duy</option>
               </select>
             </div>
           </div>
@@ -1076,9 +1076,9 @@
       </div>
 
       <script>
-const scanWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-automation';
-    const sendWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-sent-text-image';
-    const inviteWebhook = 'https://primary-production-55bc0.up.railway.app/webhook/zalo-invite-member';
+const scanWebhook = '/api/webhook/zalo-automation';
+    const sendWebhook = '/api/webhook/zalo-sent-text-image';
+    const inviteWebhook = '/api/webhook/zalo-invite-member';
 
     const ADMIN_USERNAME = 'Admin';
     const ADMIN_PASSWORD = 'nguyenduc139@';
@@ -2517,7 +2517,22 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         formData.append('groupId', currentGroup.id);
         formData.append('groupName', currentGroup.name);
         formData.append('text', text);
-        Array.from(files).forEach((f, idx) => formData.append('image' + (idx + 1), f));
+        
+        // Convert ảnh thành base64 trước khi gửi
+        if (files.length > 0) {
+          const imagePromises = Array.from(files).map(file => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsDataURL(file);
+            });
+          });
+          
+          const imageBase64Array = await Promise.all(imagePromises);
+          imageBase64Array.forEach((imageBase64, idx) => {
+            formData.append('imageBase64_' + (idx + 1), imageBase64);
+          });
+        }
 
         const res = await fetch(sendWebhook, { method: 'POST', body: formData });
         if (!res.ok) throw new Error('Send error');
@@ -2983,17 +2998,26 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           formData.append('text', text);
           formData.append('groups', JSON.stringify(selectedGroups));
           
-          // Xử lý ảnh: nếu là bài cũ thì gửi ảnh base64, nếu là bài mới thì gửi file
+          // Xử lý ảnh: chuyển tất cả ảnh thành base64
           if (selectedOldPost && selectedOldPost.images) {
             // Gửi ảnh từ bài cũ (base64)
             selectedOldPost.images.forEach((imageBase64, idx) => {
               formData.append('imageBase64_' + (idx + 1), imageBase64);
             });
             formData.append('useOldImages', 'true');
-          } else {
-            // Gửi ảnh mới
-            Array.from(files).forEach((f, idx) => {
-              formData.append('image' + (idx + 1), f);
+          } else if (files.length > 0) {
+            // Convert ảnh mới thành base64
+            const imagePromises = Array.from(files).map(file => {
+              return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+              });
+            });
+            
+            const imageBase64Array = await Promise.all(imagePromises);
+            imageBase64Array.forEach((imageBase64, idx) => {
+              formData.append('imageBase64_' + (idx + 1), imageBase64);
             });
           }
           
@@ -3018,7 +3042,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             formData.append('schedule', JSON.stringify(scheduleForWebhook));
           }
 
-          const res = await fetch('https://primary-production-55bc0.up.railway.app/webhook/zalo-post-group', { 
+          const res = await fetch('/api/webhook/zalo-post-group', { 
             method: 'POST', 
             body: formData 
           });
@@ -3238,7 +3262,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         for (const group of sourceGroups) {
           overlayText.innerHTML = `Đang quét thành viên từ nhóm: ${group.name}...`;
           //  Gửi request đến webhook để quét thành viên
-          const res = await fetch('https://primary-production-55bc0.up.railway.app/webhook/zalo-scan-members', {
+          const res = await fetch('/api/webhook/zalo-scan-members', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nick, groupId: group.id })
