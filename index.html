@@ -1845,14 +1845,14 @@ const scanWebhook = '/api/webhook/zalo-automation';
       
       for (const schedule of post.schedules) {
         if (schedule.type === 'once') {
-          const scheduleDate = new Date(schedule.date + 'T' + schedule.time);
+          const scheduleDate = createLocalDateTime(schedule.date, schedule.time);
           if (scheduleDate > now) {
             return true;
           }
         } else if (schedule.type === 'weekly') {
           // Với bài đăng theo tuần, kiểm tra lần tiếp theo
           const nextDate = getNextDateForDayOfWeek(schedule.dayOfWeek, schedule.time);
-          const nextScheduleDateTime = new Date(nextDate + 'T' + schedule.time);
+          const nextScheduleDateTime = createLocalDateTime(nextDate, schedule.time);
           if (nextScheduleDateTime > now) {
             return true;
           }
@@ -2059,15 +2059,25 @@ const scanWebhook = '/api/webhook/zalo-automation';
       return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
     }
 
+    // Helper function để tạo Date object chính xác từ date và time string
+    function createLocalDateTime(date, time) {
+      const [year, month, day] = date.split('-').map(Number);
+      const [hours, minutes] = time.split(':').map(Number);
+      // Tạo Date object với thời gian địa phương
+      return new Date(year, month - 1, day, hours, minutes);
+    }
+
     // Hàm định dạng ngày giờ
     function formatDateTime(date, time) {
-      const dateObj = new Date(date + 'T' + time);
+      const dateObj = createLocalDateTime(date, time);
+      
       return dateObj.toLocaleString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        timeZone: 'Asia/Ho_Chi_Minh'
       });
     }
 
