@@ -281,11 +281,16 @@
     // Initialize Supabase
     async function initializeSupabase() {
       try {
+        console.log('Initializing Supabase...');
+        console.log('CONFIG available:', typeof CONFIG !== 'undefined');
+        
         if (typeof CONFIG === 'undefined') {
           console.error('Config not loaded. Please create config.js file.');
           showError('Cấu hình Supabase chưa được thiết lập. Vui lòng tạo file config.js');
           return false;
         }
+        
+        console.log('CONFIG.supabase:', CONFIG.supabase);
         
         if (!CONFIG.supabase || !CONFIG.supabase.url || !CONFIG.supabase.anonKey) {
           console.error('Supabase config missing. Please check config.js');
@@ -293,7 +298,10 @@
           return false;
         }
         
+        console.log('Calling supabaseService.init...');
         supabaseInitialized = await supabaseService.init(CONFIG.supabase);
+        console.log('Supabase initialized:', supabaseInitialized);
+        
         if (!supabaseInitialized) {
           showError('Không thể kết nối đến Supabase. Vui lòng kiểm tra cấu hình.');
         }
@@ -359,18 +367,42 @@
     // User form submit
     userForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      console.log('Form submitted');
       
       if (!supabaseInitialized) {
+        console.error('Supabase not initialized');
         showError('Supabase chưa được khởi tạo');
         return;
       }
       
+      console.log('Supabase is initialized, proceeding...');
+      
       const formData = new FormData(userForm);
       const userId = formData.get('userId');
       
+      console.log('Form data:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
+      }
+      
+      // Basic validation
+      if (!formData.get('username')) {
+        console.error('Username is required');
+        showError('Tên đăng nhập là bắt buộc');
+        return;
+      }
+      
+      if (!userId && !formData.get('password')) {
+        console.error('Password is required for new users');
+        showError('Mật khẩu là bắt buộc cho người dùng mới');
+        return;
+      }
+      
       // Collect nicks
       const nickInputs = nicksList.querySelectorAll('input[name="nick"]');
+      console.log('Found nick inputs:', nickInputs.length);
       const nicks = Array.from(nickInputs).map(input => input.value.trim()).filter(nick => nick);
+      console.log('Collected nicks:', nicks);
       
       const userData = {
         username: formData.get('username'),
@@ -385,29 +417,40 @@
         status: formData.get('status')
       };
       
+      console.log('User data collected:', userData);
+      console.log('Number of nicks:', nicks.length);
+      
       // Show loading
-      const submitBtn = userForm.querySelector('button[type="submit"]');
+      const submitBtn = document.querySelector('button[type="submit"][form="userForm"]');
       const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
       submitBtn.textContent = 'Đang xử lý...';
       
       try {
         let result;
+        console.log('Calling Supabase service...');
+        
         if (userId) {
           // Update existing user
+          console.log('Updating user with ID:', userId);
           result = await supabaseService.updateUser(userId, userData);
         } else {
           // Create new user
+          console.log('Creating new user...');
           result = await supabaseService.createUser(userData);
         }
         
+        console.log('Supabase result:', result);
+        
         if (result.success) {
+          console.log('User operation successful');
           showSuccess(userId ? 'Cập nhật người dùng thành công!' : 'Tạo người dùng thành công!');
           await loadUsers();
           await updateStats();
           toggle(userModal, false);
           userForm.reset();
         } else {
+          console.error('User operation failed:', result.message);
           showError(result.message || 'Có lỗi xảy ra');
         }
       } catch (error) {

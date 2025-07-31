@@ -1,7 +1,7 @@
 // Supabase Configuration
 // Replace these with your actual Supabase project details
 
-const config = {
+const CONFIG = {
   supabase: {
     url: 'https://wylplwqvzbzywxrzcmvz.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5bHBsd3F2emJ6eXd4cnpjbXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzODE4OTIsImV4cCI6MjA2ODk1Nzg5Mn0.4BwDzu4R6nfj3McLT-YINs5NooW50I4N7tIOG8sD6-k',
@@ -23,10 +23,10 @@ const config = {
 
 // For Node.js
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = config;
+  module.exports = CONFIG;
 }
 
 // For browser
 if (typeof window !== 'undefined') {
-  window.CONFIG = config;
+  window.CONFIG = CONFIG;
 } 

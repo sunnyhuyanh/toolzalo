@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel Debug</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase-service.js"></script>
+</head>
+<body>
+  <h1>Admin Panel Debug</h1>
+  <div id="debug-output"></div>
+  
+  <script>
+    const debugOutput = document.getElementById('debug-output');
+    
+    function log(message) {
+      console.log(message);
+      debugOutput.innerHTML += '<div>' + JSON.stringify(message) + '</div>';
+    }
+    
+    async function testSetup() {
+      log('=== TESTING ADMIN SETUP ===');
+      
+      // Test 1: Config availability
+      log('1. CONFIG available: ' + (typeof CONFIG !== 'undefined'));
+      if (typeof CONFIG !== 'undefined') {
+        log('   CONFIG.supabase: ' + JSON.stringify(CONFIG.supabase));
+      }
+      
+      // Test 2: Supabase library
+      log('2. Supabase library loaded: ' + (typeof window.supabase !== 'undefined'));
+      
+      // Test 3: Supabase service
+      log('3. SupabaseService available: ' + (typeof supabaseService !== 'undefined'));
+      
+      // Test 4: Initialize Supabase
+      if (typeof CONFIG !== 'undefined' && typeof supabaseService !== 'undefined') {
+        try {
+          log('4. Initializing Supabase...');
+          const initialized = await supabaseService.init(CONFIG.supabase);
+          log('   Supabase initialized: ' + initialized);
+          
+          if (initialized) {
+            // Test 5: Create test user
+            log('5. Testing user creation...');
+            const testUserData = {
+              username: 'test_' + Date.now(),
+              password: 'test123',
+              fullName: 'Test User',
+              scanWebhook: '/api/webhook/zalo-automation',
+              sendWebhook: '/api/webhook/zalo-sent-text-image',
+              postWebhook: '/api/webhook/zalo-post-group',
+              inviteWebhook: '/api/webhook/zalo-invite-member',
+              scanMembersWebhook: '/api/webhook/zalo-scan-members',
+              nicks: ['TestNick'],
+              status: 'active'
+            };
+            
+            const result = await supabaseService.createUser(testUserData);
+            log('   Create user result: ' + JSON.stringify(result));
+            
+            if (result.success) {
+              log('✅ User creation successful!');
+              
+              // Clean up test user
+              log('6. Cleaning up test user...');
+              const deleteResult = await supabaseService.deleteUser(result.user.id);
+              log('   Delete result: ' + JSON.stringify(deleteResult));
+            }
+          }
+        } catch (error) {
+          log('❌ Error during test: ' + error.message);
+        }
+      }
+      
+      log('=== TEST COMPLETE ===');
+    }
+    
+    // Run test
+    testSetup();
+  </script>
+</body>
+</html> 
