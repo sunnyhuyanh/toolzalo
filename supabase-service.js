@@ -164,11 +164,11 @@ class SupabaseService {
             username: 'admin',
             fullName: 'Administrator',
             isAdmin: true,
-            scanWebhook: '/api/webhook/zalo-automation',
-            sendWebhook: '/api/webhook/zalo-sent-text-image',
-            postWebhook: '/api/webhook/zalo-post-group',
-            inviteWebhook: '/api/webhook/zalo-invite-member',
-            scanMembersWebhook: '/api/webhook/zalo-scan-members',
+            scanWebhook: '/webhook/zalo-automation',
+            sendWebhook: '/webhook/zalo-sent-text-image',
+            postWebhook: '/webhook/zalo-post-group',
+            inviteWebhook: '/webhook/zalo-invite-member',
+            scanMembersWebhook: '/webhook/zalo-scan-members',
             nicks: ['Admin']
           }
         };
@@ -219,11 +219,11 @@ class SupabaseService {
           username: userData.username,
           password: hashedPassword,
           full_name: userData.fullName || null,
-          scan_webhook: userData.scanWebhook || '/api/webhook/zalo-automation',
-          send_webhook: userData.sendWebhook || '/api/webhook/zalo-sent-text-image',
-          post_webhook: userData.postWebhook || '/api/webhook/zalo-post-group',
-          invite_webhook: userData.inviteWebhook || '/api/webhook/zalo-invite-member',
-          scan_members_webhook: userData.scanMembersWebhook || '/api/webhook/zalo-scan-members',
+          scan_webhook: userData.scanWebhook || '/webhook/zalo-automation',
+          send_webhook: userData.sendWebhook || '/webhook/zalo-sent-text-image',
+          post_webhook: userData.postWebhook || '/webhook/zalo-post-group',
+          invite_webhook: userData.inviteWebhook || '/webhook/zalo-invite-member',
+          scan_members_webhook: userData.scanMembersWebhook || '/webhook/zalo-scan-members',
           status: userData.status || 'active',
           is_admin: userData.isAdmin || false
         }])

@@ -1195,7 +1195,7 @@
       const isLocal = window.location.hostname === 'localhost';
       
       // Nếu là localhost và URL là relative path, sử dụng proxy
-      if (isLocal && url.startsWith('/api/webhook/')) {
+      if (isLocal && (url.startsWith('/api/webhook/') || url.startsWith('/webhook/'))) {
         return `/proxy${url}`;
       }
       
@@ -1213,12 +1213,12 @@
       return url;
     }
 
-    // Get webhooks from current user or use defaults
-    const rawScanWebhook = currentUser.scanWebhook || '/api/webhook/zalo-automation';
-    const rawSendWebhook = currentUser.sendWebhook || '/api/webhook/zalo-sent-text-image';
-    const rawPostWebhook = currentUser.postWebhook || '/api/webhook/zalo-post-group';
-    const rawInviteWebhook = currentUser.inviteWebhook || '/api/webhook/zalo-invite-member';
-    const rawScanMembersWebhook = currentUser.scanMembersWebhook || '/api/webhook/zalo-scan-members';
+    // Get webhooks from current user or use defaults (n8n format)
+    const rawScanWebhook = currentUser.scanWebhook || '/webhook/zalo-automation';
+    const rawSendWebhook = currentUser.sendWebhook || '/webhook/zalo-sent-text-image';
+    const rawPostWebhook = currentUser.postWebhook || '/webhook/zalo-post-group';
+    const rawInviteWebhook = currentUser.inviteWebhook || '/webhook/zalo-invite-member';
+    const rawScanMembersWebhook = currentUser.scanMembersWebhook || '/webhook/zalo-scan-members';
     
     const scanWebhook = processWebhookUrl(rawScanWebhook);
     const sendWebhook = processWebhookUrl(rawSendWebhook);
