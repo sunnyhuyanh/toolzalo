@@ -26,6 +26,11 @@ app.use('/proxy', createProxyMiddleware({
   }
 }));
 
+// Route cho admin panel
+app.get('/admin', (req, res) => {
+  res.sendFile(__dirname + '/admin.html');
+});
+
 // Serve static files from the current directory ('.')
 app.use(express.static('.'));
 
