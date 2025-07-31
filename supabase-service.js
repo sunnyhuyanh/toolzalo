@@ -91,7 +91,9 @@ class SupabaseService {
         fullName: user.full_name,
         scanWebhook: user.scan_webhook,
         sendWebhook: user.send_webhook,
+        postWebhook: user.post_webhook,
         inviteWebhook: user.invite_webhook,
+        scanMembersWebhook: user.scan_members_webhook,
         status: user.status,
         isAdmin: user.is_admin,
         nicks: user.user_nicks.filter(n => n.is_active).map(n => n.nick_name),
@@ -134,7 +136,9 @@ class SupabaseService {
         fullName: user.full_name,
         scanWebhook: user.scan_webhook,
         sendWebhook: user.send_webhook,
+        postWebhook: user.post_webhook,
         inviteWebhook: user.invite_webhook,
+        scanMembersWebhook: user.scan_members_webhook,
         status: user.status,
         isAdmin: user.is_admin,
         nicks: user.user_nicks.filter(n => n.is_active).map(n => n.nick_name),
@@ -162,7 +166,9 @@ class SupabaseService {
             isAdmin: true,
             scanWebhook: '/api/webhook/zalo-automation',
             sendWebhook: '/api/webhook/zalo-sent-text-image',
+            postWebhook: '/api/webhook/zalo-post-group',
             inviteWebhook: '/api/webhook/zalo-invite-member',
+            scanMembersWebhook: '/api/webhook/zalo-scan-members',
             nicks: ['Admin']
           }
         };
@@ -215,7 +221,9 @@ class SupabaseService {
           full_name: userData.fullName || null,
           scan_webhook: userData.scanWebhook || '/api/webhook/zalo-automation',
           send_webhook: userData.sendWebhook || '/api/webhook/zalo-sent-text-image',
+          post_webhook: userData.postWebhook || '/api/webhook/zalo-post-group',
           invite_webhook: userData.inviteWebhook || '/api/webhook/zalo-invite-member',
+          scan_members_webhook: userData.scanMembersWebhook || '/api/webhook/zalo-scan-members',
           status: userData.status || 'active',
           is_admin: userData.isAdmin || false
         }])
@@ -264,7 +272,9 @@ class SupabaseService {
         full_name: userData.fullName,
         scan_webhook: userData.scanWebhook,
         send_webhook: userData.sendWebhook,
+        post_webhook: userData.postWebhook,
         invite_webhook: userData.inviteWebhook,
+        scan_members_webhook: userData.scanMembersWebhook,
         status: userData.status
       };
 

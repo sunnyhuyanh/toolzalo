@@ -174,8 +174,18 @@
             </div>
             
             <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Webhook đăng bài</label>
+              <input type="text" id="postWebhook" name="postWebhook" placeholder="/api/webhook/zalo-post-group" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Webhook mời thành viên</label>
               <input type="text" id="inviteWebhook" name="inviteWebhook" placeholder="/api/webhook/zalo-invite-member" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Webhook quét thành viên</label>
+              <input type="text" id="scanMembersWebhook" name="scanMembersWebhook" placeholder="/api/webhook/zalo-scan-members" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
           </div>
         </div>
@@ -368,7 +378,9 @@
         fullName: formData.get('fullName'),
         scanWebhook: formData.get('scanWebhook') || '/api/webhook/zalo-automation',
         sendWebhook: formData.get('sendWebhook') || '/api/webhook/zalo-sent-text-image',
+        postWebhook: formData.get('postWebhook') || '/api/webhook/zalo-post-group',
         inviteWebhook: formData.get('inviteWebhook') || '/api/webhook/zalo-invite-member',
+        scanMembersWebhook: formData.get('scanMembersWebhook') || '/api/webhook/zalo-scan-members',
         nicks: nicks,
         status: formData.get('status')
       };
@@ -466,9 +478,11 @@
             : '<span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Tạm khóa</span>';
           
           const webhookDisplay = {
-            scan: (user.scanWebhook || '').substring(0, 30) + '...',
-            send: (user.sendWebhook || '').substring(0, 30) + '...',
-            invite: (user.inviteWebhook || '').substring(0, 30) + '...'
+            scan: (user.scanWebhook || '').substring(0, 25) + '...',
+            send: (user.sendWebhook || '').substring(0, 25) + '...',
+            post: (user.postWebhook || '').substring(0, 25) + '...',
+            invite: (user.inviteWebhook || '').substring(0, 25) + '...',
+            scanMembers: (user.scanMembersWebhook || '').substring(0, 25) + '...'
           };
           
           tr.innerHTML = `
@@ -476,9 +490,11 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.fullName || '-'}</td>
             <td class="px-6 py-4 text-sm text-gray-500">
               <div class="space-y-1">
-                <div class="text-xs text-gray-400" title="${user.scanWebhook}">Scan: ${webhookDisplay.scan}</div>
-                <div class="text-xs text-gray-400" title="${user.sendWebhook}">Send: ${webhookDisplay.send}</div>
-                <div class="text-xs text-gray-400" title="${user.inviteWebhook}">Invite: ${webhookDisplay.invite}</div>
+                <div class="text-xs text-gray-400" title="${user.scanWebhook}">Quét: ${webhookDisplay.scan}</div>
+                <div class="text-xs text-gray-400" title="${user.sendWebhook}">Tin nhắn: ${webhookDisplay.send}</div>
+                <div class="text-xs text-gray-400" title="${user.postWebhook}">Đăng bài: ${webhookDisplay.post}</div>
+                <div class="text-xs text-gray-400" title="${user.inviteWebhook}">Mời TV: ${webhookDisplay.invite}</div>
+                <div class="text-xs text-gray-400" title="${user.scanMembersWebhook}">Quét TV: ${webhookDisplay.scanMembers}</div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${(user.nicks || []).join(', ') || '-'}</td>
@@ -534,7 +550,9 @@
       $('fullName').value = user.fullName || '';
       $('scanWebhook').value = user.scanWebhook || '/api/webhook/zalo-automation';
       $('sendWebhook').value = user.sendWebhook || '/api/webhook/zalo-sent-text-image';
+      $('postWebhook').value = user.postWebhook || '/api/webhook/zalo-post-group';
       $('inviteWebhook').value = user.inviteWebhook || '/api/webhook/zalo-invite-member';
+      $('scanMembersWebhook').value = user.scanMembersWebhook || '/api/webhook/zalo-scan-members';
       
       // Set status
       const statusRadio = document.querySelector(`input[name="status"][value="${user.status}"]`);
