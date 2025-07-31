@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Quản lý người dùng</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Configuration -->
+  <script src="config.js"></script>
+  <!-- Supabase Service -->
+  <script src="supabase-service.js"></script>
+  <style>
+    :root { --primary:#0084ff; --primary-dark:#0071e3; }
+    body{ font-family:'Inter',sans-serif; background:linear-gradient(135deg,#e8f1ff 0%,#f7fbff 100%); }
+    .card { animation: fadeInUp 0.4s ease-out; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h1 class="text-xl font-bold text-gray-900">Admin Panel</h1>
+        </div>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all">
+          Đăng xuất
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Tổng người dùng</p>
+            <p id="totalUsers" class="text-2xl font-bold text-gray-900 mt-1">0</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Đang hoạt động</p>
+            <p id="activeUsers" class="text-2xl font-bold text-green-600 mt-1">0</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Tạm khóa</p>
+            <p id="blockedUsers" class="text-2xl font-bold text-red-600 mt-1">0</p>
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add User Button -->
+    <div class="mb-6">
+      <button id="addUserBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition-all flex items-center gap-2">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        Thêm người dùng mới
+      </button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-lg font-semibold text-gray-900">Danh sách người dùng</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên đăng nhập</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Họ tên</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Webhook</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nick Zalo</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody" class="bg-white divide-y divide-gray-100">
+            <!-- Users will be added here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit User Modal -->
+  <div id="userModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+        <h3 id="modalTitle" class="text-xl font-bold text-white">Thêm người dùng mới</h3>
+      </div>
+      
+      <form id="userForm" class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+        <input type="hidden" id="userId" name="userId">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập <span class="text-red-500">*</span></label>
+            <input type="text" id="username" name="username" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu <span class="text-red-500">*</span></label>
+            <input type="password" id="password" name="password" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Họ tên</label>
+          <input type="text" id="fullName" name="fullName" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 class="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+            </svg>
+            Cấu hình Webhook
+          </h4>
+          
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Webhook quét nhóm</label>
+              <input type="text" id="scanWebhook" name="scanWebhook" placeholder="/api/webhook/zalo-automation" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Webhook gửi tin nhắn</label>
+              <input type="text" id="sendWebhook" name="sendWebhook" placeholder="/api/webhook/zalo-sent-text-image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Webhook mời thành viên</label>
+              <input type="text" id="inviteWebhook" name="inviteWebhook" placeholder="/api/webhook/zalo-invite-member" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <h4 class="font-semibold text-green-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+              <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+            </svg>
+            Danh sách Nick Zalo
+          </h4>
+          
+          <div id="nicksList" class="space-y-2">
+            <!-- Nick inputs will be added here -->
+          </div>
+          
+          <button type="button" id="addNickBtn" class="mt-3 text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Thêm nick
+          </button>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2">
+              <input type="radio" name="status" value="active" checked class="text-green-600 focus:ring-green-500">
+              <span class="text-sm">Hoạt động</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="status" value="blocked" class="text-red-600 focus:ring-red-500">
+              <span class="text-sm">Tạm khóa</span>
+            </label>
+          </div>
+        </div>
+      </form>
+      
+      <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+        <button type="button" id="cancelBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg transition-all">
+          Hủy
+        </button>
+        <button type="submit" form="userForm" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg transition-all">
+          Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let users = [];
+    let supabaseInitialized = false;
+    
+    // Elements
+    const $ = id => document.getElementById(id);
+    const toggle = (el, show) => el.classList[show ? 'remove' : 'add']('hidden');
+    
+    const totalUsersEl = $('totalUsers');
+    const activeUsersEl = $('activeUsers');
+    const blockedUsersEl = $('blockedUsers');
+    const usersTableBody = $('usersTableBody');
+    const userModal = $('userModal');
+    const modalTitle = $('modalTitle');
+    const userForm = $('userForm');
+    const addUserBtn = $('addUserBtn');
+    const cancelBtn = $('cancelBtn');
+    const addNickBtn = $('addNickBtn');
+    const nicksList = $('nicksList');
+    
+              // Initialize Supabase and check admin access
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check if user is admin
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const isLoggedIn = sessionStorage.getItem('zalo_scanner_logged_in');
+      
+      if (!isLoggedIn || !currentUser.isAdmin) {
+        // Redirect to login page instead of showing alert
+        window.location.href = '/?redirect=admin';
+        return;
+      }
+      
+      // Initialize Supabase
+      await initializeSupabase();
+      
+      // Load data
+      await loadUsers();
+      await updateStats();
+    });
+    
+    // Initialize Supabase
+    async function initializeSupabase() {
+      try {
+        if (typeof CONFIG === 'undefined') {
+          console.error('Config not loaded. Please create config.js file.');
+          showError('Cấu hình Supabase chưa được thiết lập. Vui lòng tạo file config.js');
+          return false;
+        }
+        
+        if (!CONFIG.supabase || !CONFIG.supabase.url || !CONFIG.supabase.anonKey) {
+          console.error('Supabase config missing. Please check config.js');
+          showError('Thiếu thông tin cấu hình Supabase. Vui lòng kiểm tra file config.js');
+          return false;
+        }
+        
+        supabaseInitialized = await supabaseService.init(CONFIG.supabase);
+        if (!supabaseInitialized) {
+          showError('Không thể kết nối đến Supabase. Vui lòng kiểm tra cấu hình.');
+        }
+        return supabaseInitialized;
+      } catch (error) {
+        console.error('Error initializing Supabase:', error);
+        showError('Lỗi khởi tạo Supabase: ' + error.message);
+        return false;
+      }
+    }
+    
+    // Show error message
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
+      errorDiv.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span>${message}</span>
+        </div>
+      `;
+      document.body.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 5000);
+    }
+    
+    // Show success message
+    function showSuccess(message) {
+      const successDiv = document.createElement('div');
+      successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50';
+      successDiv.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <span>${message}</span>
+        </div>
+      `;
+      document.body.appendChild(successDiv);
+      setTimeout(() => successDiv.remove(), 3000);
+    }
+    
+    // Add user button
+    addUserBtn.addEventListener('click', () => {
+      modalTitle.textContent = 'Thêm người dùng mới';
+      userForm.reset();
+      $('userId').value = '';
+      $('password').required = true;
+      nicksList.innerHTML = '';
+      addNickInput();
+      toggle(userModal, true);
+    });
+    
+    // Cancel button
+    cancelBtn.addEventListener('click', () => {
+      toggle(userModal, false);
+    });
+    
+    // Add nick button
+    addNickBtn.addEventListener('click', addNickInput);
+    
+    // User form submit
+    userForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!supabaseInitialized) {
+        showError('Supabase chưa được khởi tạo');
+        return;
+      }
+      
+      const formData = new FormData(userForm);
+      const userId = formData.get('userId');
+      
+      // Collect nicks
+      const nickInputs = nicksList.querySelectorAll('input[name="nick"]');
+      const nicks = Array.from(nickInputs).map(input => input.value.trim()).filter(nick => nick);
+      
+      const userData = {
+        username: formData.get('username'),
+        password: formData.get('password'),
+        fullName: formData.get('fullName'),
+        scanWebhook: formData.get('scanWebhook') || '/api/webhook/zalo-automation',
+        sendWebhook: formData.get('sendWebhook') || '/api/webhook/zalo-sent-text-image',
+        inviteWebhook: formData.get('inviteWebhook') || '/api/webhook/zalo-invite-member',
+        nicks: nicks,
+        status: formData.get('status')
+      };
+      
+      // Show loading
+      const submitBtn = userForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang xử lý...';
+      
+      try {
+        let result;
+        if (userId) {
+          // Update existing user
+          result = await supabaseService.updateUser(userId, userData);
+        } else {
+          // Create new user
+          result = await supabaseService.createUser(userData);
+        }
+        
+        if (result.success) {
+          showSuccess(userId ? 'Cập nhật người dùng thành công!' : 'Tạo người dùng thành công!');
+          await loadUsers();
+          await updateStats();
+          toggle(userModal, false);
+          userForm.reset();
+        } else {
+          showError(result.message || 'Có lỗi xảy ra');
+        }
+      } catch (error) {
+        console.error('Error saving user:', error);
+        showError('Lỗi: ' + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+    
+    // Add nick input
+    function addNickInput(value = '') {
+      const nickInput = document.createElement('div');
+      nickInput.className = 'flex items-center gap-2';
+      nickInput.innerHTML = `
+        <input type="text" name="nick" value="${value}" placeholder="Nhập tên nick Zalo" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500">
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 transition-colors">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      `;
+      nicksList.appendChild(nickInput);
+    }
+    
+    // Load users
+    async function loadUsers() {
+      if (!supabaseInitialized) {
+        console.warn('Supabase not initialized, skipping loadUsers');
+        return;
+      }
+      
+      try {
+        const result = await supabaseService.getAllUsers();
+        
+        if (result.error) {
+          showError('Lỗi tải danh sách người dùng: ' + result.error);
+          return;
+        }
+        
+        users = result.data;
+        usersTableBody.innerHTML = '';
+        
+        if (users.length === 0) {
+          usersTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                <div class="flex flex-col items-center gap-2">
+                  <svg class="w-12 h-12 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                  </svg>
+                  <p>Chưa có người dùng nào</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+        
+        users.forEach(user => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-50';
+          
+          const createdDate = new Date(user.createdAt).toLocaleDateString('vi-VN');
+          const statusBadge = user.status === 'active' 
+            ? '<span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Hoạt động</span>'
+            : '<span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Tạm khóa</span>';
+          
+          const webhookDisplay = {
+            scan: (user.scanWebhook || '').substring(0, 30) + '...',
+            send: (user.sendWebhook || '').substring(0, 30) + '...',
+            invite: (user.inviteWebhook || '').substring(0, 30) + '...'
+          };
+          
+          tr.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.username}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.fullName || '-'}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">
+              <div class="space-y-1">
+                <div class="text-xs text-gray-400" title="${user.scanWebhook}">Scan: ${webhookDisplay.scan}</div>
+                <div class="text-xs text-gray-400" title="${user.sendWebhook}">Send: ${webhookDisplay.send}</div>
+                <div class="text-xs text-gray-400" title="${user.inviteWebhook}">Invite: ${webhookDisplay.invite}</div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${(user.nicks || []).join(', ') || '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${createdDate}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button onclick="editUser('${user.id}')" class="text-blue-600 hover:text-blue-900 mr-3 transition-colors">Sửa</button>
+              <button onclick="deleteUser('${user.id}')" class="text-red-600 hover:text-red-900 transition-colors">Xóa</button>
+            </td>
+          `;
+          
+          usersTableBody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Lỗi tải danh sách người dùng: ' + error.message);
+      }
+    }
+    
+    // Update stats
+    async function updateStats() {
+      if (!supabaseInitialized) {
+        console.warn('Supabase not initialized, skipping updateStats');
+        return;
+      }
+      
+      try {
+        const stats = await supabaseService.getUserStats();
+        totalUsersEl.textContent = stats.total;
+        activeUsersEl.textContent = stats.active;
+        blockedUsersEl.textContent = stats.blocked;
+      } catch (error) {
+        console.error('Error updating stats:', error);
+        totalUsersEl.textContent = '0';
+        activeUsersEl.textContent = '0';
+        blockedUsersEl.textContent = '0';
+      }
+    }
+    
+    // Edit user
+    window.editUser = (userId) => {
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        showError('Không tìm thấy người dùng');
+        return;
+      }
+      
+      modalTitle.textContent = 'Chỉnh sửa người dùng';
+      $('userId').value = user.id;
+      $('username').value = user.username;
+      $('password').value = '';
+      $('password').required = false;
+      $('fullName').value = user.fullName || '';
+      $('scanWebhook').value = user.scanWebhook || '/api/webhook/zalo-automation';
+      $('sendWebhook').value = user.sendWebhook || '/api/webhook/zalo-sent-text-image';
+      $('inviteWebhook').value = user.inviteWebhook || '/api/webhook/zalo-invite-member';
+      
+      // Set status
+      const statusRadio = document.querySelector(`input[name="status"][value="${user.status}"]`);
+      if (statusRadio) {
+        statusRadio.checked = true;
+      }
+      
+      // Load nicks
+      nicksList.innerHTML = '';
+      if (user.nicks && user.nicks.length > 0) {
+        user.nicks.forEach(nick => addNickInput(nick));
+      } else {
+        addNickInput();
+      }
+      
+      toggle(userModal, true);
+    };
+    
+    // Delete user
+    window.deleteUser = async (userId) => {
+      if (!supabaseInitialized) {
+        showError('Supabase chưa được khởi tạo');
+        return;
+      }
+      
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        showError('Không tìm thấy người dùng');
+        return;
+      }
+      
+      if (confirm(`Bạn có chắc chắn muốn xóa người dùng "${user.username}"?\n\nHành động này không thể hoàn tác.`)) {
+        try {
+          const result = await supabaseService.deleteUser(userId);
+          
+          if (result.success) {
+            showSuccess('Xóa người dùng thành công!');
+            await loadUsers();
+            await updateStats();
+          } else {
+            showError(result.message || 'Có lỗi xảy ra khi xóa người dùng');
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          showError('Lỗi: ' + error.message);
+        }
+      }
+    };
+    
+    // Logout
+    $('logoutBtn').addEventListener('click', () => {
+      if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        sessionStorage.removeItem('zalo_scanner_logged_in');
+        localStorage.removeItem('currentUser');
+        window.location.href = '/';
+      }
+    });
+  </script>
+</body>
+</html> 

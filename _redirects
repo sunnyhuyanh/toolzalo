@@ -1,0 +1,4 @@
+# Netlify redirects configuration
+/              /index.html    200
+/admin         /admin.html    200
+/api/*         /api/proxy.js  200 

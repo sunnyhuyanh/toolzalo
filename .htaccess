@@ -1,0 +1,19 @@
+# Enable RewriteEngine
+RewriteEngine On
+
+# Redirect /admin to admin.html
+RewriteRule ^admin/?$ /admin.html [L]
+
+# Redirect root to index.html (default)
+DirectoryIndex index.html
+
+# Optional: Remove .html extension from URLs
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.html [NC,L]
+
+# Security: Prevent access to .htaccess file
+<Files .htaccess>
+Order allow,deny
+Deny from all
+</Files> 
