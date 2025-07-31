@@ -322,10 +322,6 @@
             <div class="relative">
               <select id="nickSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
                 <option value="" disabled selected hidden>Chọn một nick …</option>
-                <option value="test">test</option>
-                <option value="Dương Nguyễn">Dương Nguyễn</option>
-                <option value="Đức Phòng">Đức Phòng</option>
-                <option value="Khánh Duy">Khánh Duy</option>
               </select>
             </div>
           </div>
@@ -414,10 +410,6 @@
             <div class="relative">
               <select id="nickSelect2" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
                 <option value="" disabled selected hidden>Chọn một nick …</option>
-                <option value="test">test</option>
-                <option value="Dương Nguyễn">Dương Nguyễn</option>
-                <option value="Đức Phòng">Đức Phòng</option>
-                <option value="Khánh Duy">Khánh Duy</option>
               </select>
             </div>
           </div>
@@ -937,10 +929,7 @@
             <label for="nickSelect3" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
             <div class="relative">
               <select id="nickSelect3" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-purple-500">
-                <option value="test">test</option>
-                <option value="Dương Nguyễn">Dương Nguyễn</option>
-                <option value="Đức Phòng">Đức Phòng</option>
-                <option value="Khánh Duy">Khánh Duy</option>
+                <option value="" disabled selected hidden>Chọn một nick …</option>
               </select>
             </div>
             <p class="text-xs text-amber-600 font-medium">***Lưu ý: mỗi nick 1 ngày chỉ nên mời 30 người</p>
@@ -2174,8 +2163,11 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       toggle(mainApp, true);
       showPage(homePage);
       
-      // Load webhook config từ user
+      // Load webhook config from user
       loadWebhookConfig();
+      
+      // Load user nicks into dropdowns
+      loadUserNicks();
     }
 // Event listeners cho các tính năng
     feature1Card.addEventListener('click', () => {
@@ -2419,34 +2411,39 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       toggle(loginBtnText, false);
       toggle(loginSpinner, true);
       toggle(loginError, false);
+      
+      try {
+        // Initialize Supabase if not already
+        if (!supabaseService.initialized) {
+          if (typeof CONFIG === 'undefined' || !CONFIG.supabase) {
+            throw new Error('Supabase config not found!');
+          }
+          await supabaseService.init(CONFIG.supabase);
+        }
+        
+        // Authenticate user
+        const result = await supabaseService.authenticate(username, password);
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        // Lưu thông tin admin
-        const adminUser = {
-          username: ADMIN_USERNAME,
-          fullName: 'Administrator',
-          isAdmin: true,
-          scanWebhook: '/api/webhook/zalo-automation',
-          sendWebhook: '/api/webhook/zalo-sent-text-image',
-          postWebhook: '/api/webhook/zalo-post-group',
-          inviteWebhook: '/api/webhook/zalo-invite-member',
-          scanMembersWebhook: '/api/webhook/zalo-scan-members'
-        };
-        localStorage.setItem('currentUser', JSON.stringify(adminUser));
-        sessionStorage.setItem('zalo_scanner_logged_in', 'true');
-        showMainApp();
-        loginForm.reset();
-      } else {
+        if (result.success) {
+          localStorage.setItem('currentUser', JSON.stringify(result.user));
+          sessionStorage.setItem('zalo_scanner_logged_in', 'true');
+          showMainApp();
+          loginForm.reset();
+        } else {
+          toggle(loginError, true);
+          $('loginError').querySelector('p').textContent = result.message || 'Tên đăng nhập hoặc mật khẩu không đúng!';
+          loginForm.classList.add('shake');
+          setTimeout(() => loginForm.classList.remove('shake'), 500);
+        }
+      } catch (err) {
+        console.error('Login error:', err);
         toggle(loginError, true);
-        loginForm.classList.add('shake');
-        setTimeout(() => loginForm.classList.remove('shake'), 500);
+        $('loginError').querySelector('p').textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
+      } finally {
+        loginBtn.disabled = false;
+        toggle(loginBtnText, true);
+        toggle(loginSpinner, false);
       }
-
-      loginBtn.disabled = false;
-      toggle(loginBtnText, true);
-      toggle(loginSpinner, false);
     });
 
     // Đăng xuất
@@ -3502,6 +3499,35 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     toggle($('oldPostModal'), false);
     toggle($('previewModal'), false);
     console.log('Old post feature state reset completed');
+
+    // Load user nicks into dropdowns
+    function loadUserNicks() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const nicks = currentUser.nicks || [];
+      
+      const selects = [nickSelect, nickSelect2, nickSelect3];
+      
+      selects.forEach(select => {
+        if (!select) return;
+        
+        // Clear existing options except the placeholder
+        const placeholder = select.querySelector('option[disabled]');
+        select.innerHTML = '';
+        if (placeholder) {
+          select.appendChild(placeholder);
+        }
+        
+        // Add new options
+        if (nicks.length > 0) {
+          nicks.forEach(nick => {
+            const option = document.createElement('option');
+            option.value = nick;
+            option.textContent = nick;
+            select.appendChild(option);
+          });
+        }
+      });
+    }
   </script>
 </body>
 </html>
