@@ -322,6 +322,10 @@
             <div class="relative">
               <select id="nickSelect" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
                 <option value="" disabled selected hidden>Chọn một nick …</option>
+                <option value="test">test</option>
+                <option value="Dương Nguyễn">Dương Nguyễn</option>
+                <option value="Đức Phòng">Đức Phòng</option>
+                <option value="Khánh Duy">Khánh Duy</option>
               </select>
             </div>
           </div>
@@ -410,6 +414,10 @@
             <div class="relative">
               <select id="nickSelect2" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary">
                 <option value="" disabled selected hidden>Chọn một nick …</option>
+                <option value="test">test</option>
+                <option value="Dương Nguyễn">Dương Nguyễn</option>
+                <option value="Đức Phòng">Đức Phòng</option>
+                <option value="Khánh Duy">Khánh Duy</option>
               </select>
             </div>
           </div>
@@ -929,7 +937,10 @@
             <label for="nickSelect3" class="text-sm font-medium text-gray-600">Chọn tài khoản (nick) cần quét nhóm</label>
             <div class="relative">
               <select id="nickSelect3" class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-purple-500">
-                <option value="" disabled selected hidden>Chọn một nick …</option>
+                <option value="test">test</option>
+                <option value="Dương Nguyễn">Dương Nguyễn</option>
+                <option value="Đức Phòng">Đức Phòng</option>
+                <option value="Khánh Duy">Khánh Duy</option>
               </select>
             </div>
             <p class="text-xs text-amber-600 font-medium">***Lưu ý: mỗi nick 1 ngày chỉ nên mời 30 người</p>
@@ -1065,35 +1076,12 @@
       </div>
 
       <script>
-// Webhook URLs sẽ được load từ user config
-    let scanWebhook = '/api/webhook/zalo-automation';
-    let sendWebhook = '/api/webhook/zalo-sent-text-image';
-    let postWebhook = '/api/webhook/zalo-post-group';
-    let inviteWebhook = '/api/webhook/zalo-invite-member';
-    let scanMembersWebhook = '/api/webhook/zalo-scan-members';
+const scanWebhook = '/api/webhook/zalo-automation';
+    const sendWebhook = '/api/webhook/zalo-sent-text-image';
+    const inviteWebhook = '/api/webhook/zalo-invite-member';
 
     const ADMIN_USERNAME = 'Admin';
     const ADMIN_PASSWORD = 'nguyenduc139@';
-
-    // Function để load webhook config từ user
-    function loadWebhookConfig() {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      if (currentUser && currentUser.scanWebhook) {
-        scanWebhook = currentUser.scanWebhook;
-        sendWebhook = currentUser.sendWebhook;
-        postWebhook = currentUser.postWebhook || '/api/webhook/zalo-post-group';
-        inviteWebhook = currentUser.inviteWebhook;
-        scanMembersWebhook = currentUser.scanMembersWebhook || '/api/webhook/zalo-scan-members';
-        
-        console.log('Loaded webhook config:', {
-          scanWebhook,
-          sendWebhook,
-          postWebhook,
-          inviteWebhook,
-          scanMembersWebhook
-        });
-      }
-    }
 
     const $ = id => document.getElementById(id);
     const toggle = (el, show) => {
@@ -2162,12 +2150,6 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       toggle(loginPage, false);
       toggle(mainApp, true);
       showPage(homePage);
-      
-      // Load webhook config from user
-      loadWebhookConfig();
-      
-      // Load user nicks into dropdowns
-      loadUserNicks();
     }
 // Event listeners cho các tính năng
     feature1Card.addEventListener('click', () => {
@@ -2411,46 +2393,28 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       toggle(loginBtnText, false);
       toggle(loginSpinner, true);
       toggle(loginError, false);
-      
-      try {
-        // Initialize Supabase if not already
-        if (!supabaseService.initialized) {
-          if (typeof CONFIG === 'undefined' || !CONFIG.supabase) {
-            throw new Error('Supabase config not found!');
-          }
-          await supabaseService.init(CONFIG.supabase);
-        }
-        
-        // Authenticate user
-        const result = await supabaseService.authenticate(username, password);
 
-        if (result.success) {
-          localStorage.setItem('currentUser', JSON.stringify(result.user));
-          sessionStorage.setItem('zalo_scanner_logged_in', 'true');
-          showMainApp();
-          loginForm.reset();
-        } else {
-          toggle(loginError, true);
-          $('loginError').querySelector('p').textContent = result.message || 'Tên đăng nhập hoặc mật khẩu không đúng!';
-          loginForm.classList.add('shake');
-          setTimeout(() => loginForm.classList.remove('shake'), 500);
-        }
-      } catch (err) {
-        console.error('Login error:', err);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        sessionStorage.setItem('zalo_scanner_logged_in', 'true');
+        showMainApp();
+        loginForm.reset();
+      } else {
         toggle(loginError, true);
-        $('loginError').querySelector('p').textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
-      } finally {
-        loginBtn.disabled = false;
-        toggle(loginBtnText, true);
-        toggle(loginSpinner, false);
+        loginForm.classList.add('shake');
+        setTimeout(() => loginForm.classList.remove('shake'), 500);
       }
+
+      loginBtn.disabled = false;
+      toggle(loginBtnText, true);
+      toggle(loginSpinner, false);
     });
 
     // Đăng xuất
     logoutBtn.addEventListener('click', () => {
       if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         sessionStorage.removeItem('zalo_scanner_logged_in');
-        localStorage.removeItem('currentUser');
         showLoginPage();
         showPage(homePage);
         toggle(step1, true);
@@ -3088,7 +3052,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             formData.append('schedule', JSON.stringify(scheduleForWebhook));
           }
 
-          const res = await fetch(postWebhook, { 
+          const res = await fetch('/api/webhook/zalo-post-group', { 
             method: 'POST', 
             body: formData 
           });
@@ -3308,7 +3272,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         for (const group of sourceGroups) {
           overlayText.innerHTML = `Đang quét thành viên từ nhóm: ${group.name}...`;
           //  Gửi request đến webhook để quét thành viên
-          const res = await fetch(scanMembersWebhook, {
+          const res = await fetch('/api/webhook/zalo-scan-members', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nick, groupId: group.id })
@@ -3499,35 +3463,6 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     toggle($('oldPostModal'), false);
     toggle($('previewModal'), false);
     console.log('Old post feature state reset completed');
-
-    // Load user nicks into dropdowns
-    function loadUserNicks() {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const nicks = currentUser.nicks || [];
-      
-      const selects = [nickSelect, nickSelect2, nickSelect3];
-      
-      selects.forEach(select => {
-        if (!select) return;
-        
-        // Clear existing options except the placeholder
-        const placeholder = select.querySelector('option[disabled]');
-        select.innerHTML = '';
-        if (placeholder) {
-          select.appendChild(placeholder);
-        }
-        
-        // Add new options
-        if (nicks.length > 0) {
-          nicks.forEach(nick => {
-            const option = document.createElement('option');
-            option.value = nick;
-            option.textContent = nick;
-            select.appendChild(option);
-          });
-        }
-      });
-    }
   </script>
 </body>
 </html>

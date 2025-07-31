@@ -1189,10 +1189,49 @@
 // Get current user data
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     
+    // Function to process webhook URLs for proxy if needed
+    function processWebhookUrl(url) {
+      if (!url) return url;
+      const isLocal = window.location.hostname === 'localhost';
+      
+      // Nếu là localhost và URL là relative path, sử dụng proxy
+      if (isLocal && url.startsWith('/api/webhook/')) {
+        return `/proxy${url}`;
+      }
+      
+      // Nếu là localhost và URL là full HTTP URL, chuyển sang proxy  
+      if (isLocal && url.startsWith('http')) {
+        try {
+          const urlObj = new URL(url);
+          return `/proxy${urlObj.pathname}${urlObj.search}`;
+        } catch (e) {
+          return url;
+        }
+      }
+      
+      // Nếu không phải localhost, sử dụng URL gốc
+      return url;
+    }
+
     // Get webhooks from current user or use defaults
-    const scanWebhook = currentUser.scanWebhook || '/api/webhook/zalo-automation';
-    const sendWebhook = currentUser.sendWebhook || '/api/webhook/zalo-sent-text-image';
-    const inviteWebhook = currentUser.inviteWebhook || '/api/webhook/zalo-invite-member';
+    const rawScanWebhook = currentUser.scanWebhook || '/api/webhook/zalo-automation';
+    const rawSendWebhook = currentUser.sendWebhook || '/api/webhook/zalo-sent-text-image';
+    const rawPostWebhook = currentUser.postWebhook || '/api/webhook/zalo-post-group';
+    const rawInviteWebhook = currentUser.inviteWebhook || '/api/webhook/zalo-invite-member';
+    const rawScanMembersWebhook = currentUser.scanMembersWebhook || '/api/webhook/zalo-scan-members';
+    
+    const scanWebhook = processWebhookUrl(rawScanWebhook);
+    const sendWebhook = processWebhookUrl(rawSendWebhook);
+    const postWebhook = processWebhookUrl(rawPostWebhook);
+    const inviteWebhook = processWebhookUrl(rawInviteWebhook);
+    const scanMembersWebhook = processWebhookUrl(rawScanMembersWebhook);
+    
+    console.log('Webhook URLs configured:');
+    console.log('- scanWebhook:', scanWebhook);
+    console.log('- sendWebhook:', sendWebhook);
+    console.log('- postWebhook:', postWebhook);
+    console.log('- inviteWebhook:', inviteWebhook);
+    console.log('- scanMembersWebhook:', scanMembersWebhook);
 
     const ADMIN_USERNAME = 'admin';
     const ADMIN_PASSWORD = 'admin@123';
@@ -2752,7 +2791,14 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       groupSelect.innerHTML = '';
 
       try {
-        const res = await fetch(scanWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick }) });
+        const formData = new FormData();
+        formData.append('nick', nick);
+
+        const res = await fetch(scanWebhook, { 
+          method: 'POST', 
+          body: formData 
+        });
+        
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -2774,7 +2820,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           toggle(actionsBox, true);
         }
         toggle(resultSec, true);
-      } catch ( err) {
+      } catch (err) {
         console.error(err);
         alert('Quét nhóm thất bại, vui lòng thử lại.');
       } finally {
@@ -2881,7 +2927,9 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       selectedGroups = [];
 
       try {
-        const res = await fetch(scanWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick }) });
+        const formData = new FormData();
+        formData.append('nick', nick);
+        const res = await fetch(scanWebhook, { method: 'POST', body: formData });
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -3349,7 +3397,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             formData.append('schedule', JSON.stringify(scheduleForWebhook));
           }
 
-          const res = await fetch('/api/webhook/zalo-post-group', { 
+          const res = await fetch(postWebhook, { 
             method: 'POST', 
             body: formData 
           });
@@ -3465,7 +3513,9 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       targetGroups = [];
 
       try {
-        const res = await fetch(scanWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick }) });
+        const formData = new FormData();
+        formData.append('nick', nick);
+        const res = await fetch(scanWebhook, { method: 'POST', body: formData });
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -3569,7 +3619,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         for (const group of sourceGroups) {
           overlayText.innerHTML = `Đang quét thành viên từ nhóm: ${group.name}...`;
           //  Gửi request đến webhook để quét thành viên
-          const res = await fetch('/api/webhook/zalo-scan-members', {
+          const res = await fetch(scanMembersWebhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nick, groupId: group.id })
