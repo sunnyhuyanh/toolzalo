@@ -2,10 +2,10 @@
   "name": "zalo-group-automation",
   "version": "1.0.0",
   "description": "Hệ thống tự động hóa quản lý nhóm Zalo với multi-user support",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node index.js",
+    "dev": "node index.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
