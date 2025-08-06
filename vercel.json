@@ -3,7 +3,8 @@
   "name": "zalo-group-automation",
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
-    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/admin", "destination": "/admin-login.html" },
+    { "source": "/admin-panel", "destination": "/admin.html" },
     { "source": "/api/(.*)", "destination": "/api/proxy.js" }
   ],
   "headers": [
