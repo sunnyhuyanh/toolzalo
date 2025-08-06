@@ -1,3 +1,23 @@
+const fs = require('fs');
+const util = require('util');
+const logFile = fs.createWriteStream(__dirname + '/debug.log', { flags: 'w' });
+const logStdout = process.stdout;
+
+console.log = function(d) {
+  logFile.write(util.format(d) + '\n');
+  logStdout.write(util.format(d) + '\n');
+};
+
+process.on('uncaughtException', (err, origin) => {
+  fs.writeSync(
+    process.stderr.fd,
+    `Caught exception: ${err}\n` +
+    `Exception origin: ${origin}`
+  );
+  console.log(`Caught exception: ${err}\n` + `Exception origin: ${origin}`);
+  process.exit(1);
+});
+
 /**
  * Production-ready server for Zalo Automation
  * Final version with a buffered Axios proxy to ensure data integrity
@@ -23,7 +43,7 @@ app.get('/health', (req, res) => {
 
 // Admin routes
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin-login.html'));
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 app.get('/admin-dashboard.html', (req, res) => {

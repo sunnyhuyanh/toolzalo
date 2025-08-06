@@ -155,22 +155,6 @@ class SupabaseService {
   // Authenticate user
   async authenticate(username, password) {
     try {
-      // Check admin credentials first
-      if (username === 'admin' && password === 'admin@123') {
-        return {
-          success: true,
-          user: {
-            id: 'admin',
-            username: 'admin',
-            fullName: 'Administrator',
-            isAdmin: true,
-            scanWebhook: '/webhook/zalo-automation',
-            scanMembersWebhook: '/webhook/zalo-scan-members',
-            nicks: ['Admin']
-          }
-        };
-      }
-
       const { data: user, error } = await this.getUserByUsername(username);
       if (error || !user) {
         return { success: false, message: 'Invalid username or password' };
@@ -216,8 +200,11 @@ class SupabaseService {
           username: userData.username,
           password: hashedPassword,
           full_name: userData.fullName || null,
-          scan_webhook: userData.scanWebhook || '/webhook/zalo-automation',
-          scan_members_webhook: userData.scanMembersWebhook || '/webhook/zalo-scan-members',
+          scan_webhook: userData.scanWebhook,
+          send_webhook: userData.sendWebhook,
+          post_webhook: userData.postWebhook,
+          invite_webhook: userData.inviteWebhook,
+          scan_members_webhook: userData.scanMembersWebhook,
           status: userData.status || 'active',
           is_admin: userData.isAdmin || false
         }])
@@ -228,19 +215,29 @@ class SupabaseService {
 
       // Insert nicks if provided
       if (userData.nicks && userData.nicks.length > 0) {
+        console.log('Inserting nicks for user:', newUser.id, 'nicks:', userData.nicks);
+        
         const nickData = userData.nicks.map(nick => ({
           user_id: newUser.id,
           nick_name: nick,
           is_active: true
         }));
 
-        const { error: nicksError } = await this.supabase
+        console.log('Nick data to insert:', nickData);
+
+        const { data: insertedNicks, error: nicksError } = await this.supabase
           .from('user_nicks')
-          .insert(nickData);
+          .insert(nickData)
+          .select();
 
         if (nicksError) {
           console.error('Error inserting nicks:', nicksError);
+          return { success: false, message: 'User created but failed to add nicks: ' + nicksError.message };
         }
+
+        console.log('Successfully inserted nicks:', insertedNicks);
+      } else {
+        console.log('No nicks to insert for user:', newUser.id);
       }
 
       // Log activity
@@ -293,11 +290,11 @@ class SupabaseService {
         .eq('id', userId)
         .select()
         .single();
-
+        
       if (updateError) throw updateError;
 
       // Update nicks
-      if (userData.nicks) {
+      if (typeof userData.nicks !== 'undefined') {
         // Delete existing nicks
         await this.supabase
           .from('user_nicks')
@@ -317,6 +314,7 @@ class SupabaseService {
             .insert(nickData);
 
           if (nicksError) {
+            // Even if nicks fail, we don't want to fail the whole user update
             console.error('Error updating nicks:', nicksError);
           }
         }

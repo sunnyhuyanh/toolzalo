@@ -258,7 +258,6 @@
     const addNickBtn = $('addNickBtn');
     const nicksList = $('nicksList');
     
-              // Initialize Supabase and check admin access
     document.addEventListener('DOMContentLoaded', async () => {
       // Check if user is admin
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -403,6 +402,12 @@
       console.log('Found nick inputs:', nickInputs.length);
       const nicks = Array.from(nickInputs).map(input => input.value.trim()).filter(nick => nick);
       console.log('Collected nicks:', nicks);
+      
+      // Validate at least one nick is required
+      if (nicks.length === 0) {
+        showError('Vui lòng nhập ít nhất một nick Zalo');
+        return;
+      }
       
       const userData = {
         username: formData.get('username'),
