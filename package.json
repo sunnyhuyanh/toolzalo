@@ -2,13 +2,10 @@
   "name": "zalo-group-automation",
   "version": "1.0.0",
   "description": "Hệ thống tự động hóa quản lý nhóm Zalo với multi-user support",
-  "main": "proxy.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "node simple-server.js",
-    "start": "node simple-server.js",
-    "build": "npm run minify",
-    "minify": "html-minifier --input-dir . --output-dir dist --file-ext html && npm run minify-js",
-    "minify-js": "terser auth.js router.js -o dist/bundle.min.js",
+    "start": "node server.js",
+    "dev": "node server.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [

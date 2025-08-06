@@ -1191,14 +1191,26 @@
     
     // Function to process webhook URLs - SIMPLE VERSION
     function processWebhookUrl(url) {
-      if (!url) return url;
+      // Luôn sử dụng relative path để gọi qua proxy của chính server
+      // Ví dụ: /webhook/zalo-automation
+      // Dù ở localhost hay production, nó sẽ tự động trỏ đến server đang chạy
+      if (!url) return '';
       
-      // Nếu URL là relative path (/webhook/...), chuyển thành full URL
-      if (url.startsWith('/webhook/') || url.startsWith('/api/webhook/')) {
-        return `https://n8nhosting-60996536.phoai.vn${url}`;
+      if (url.startsWith('/api/webhook/')) {
+        return url.replace('/api/webhook/', '/webhook/');
       }
       
-      // Nếu đã là full URL, giữ nguyên
+      if (url.startsWith('http')) {
+        try {
+          const urlObj = new URL(url);
+          return urlObj.pathname; // Chỉ lấy phần path, ví dụ /webhook/zalo-automation
+        } catch (e) {
+          // Nếu URL không hợp lệ, trả về URL gốc để debug
+          return url;
+        }
+      }
+      
+      // Nếu đã là /webhook/ rồi thì giữ nguyên
       return url;
     }
 
