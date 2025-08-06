@@ -8,7 +8,7 @@ const path =require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000; // Hardcode port for Railway stability
 const API_TARGET = 'https://n8nhosting-60996536.phoai.vn';
 
 // Middleware
