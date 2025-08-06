@@ -1,14 +1,14 @@
 /**
  * Production-ready server for Zalo Automation
- * Final version with the most robust proxy configuration
+ * Final version with a buffered Axios proxy to ensure data integrity
  */
 
 const express = require('express');
-const path =require('path');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const path = require('path');
+const axios = require('axios');
 
 const app = express();
-const PORT = 3000; // Hardcode port for Railway stability
+const PORT = 3000; // Hardcoded for Railway stability
 const API_TARGET = 'https://n8nhosting-60996536.phoai.vn';
 
 // Middleware
@@ -30,54 +30,51 @@ app.get('/admin-dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
 });
 
-// The Most Robust Webhook Proxy
-const webhookProxy = createProxyMiddleware({
-  target: API_TARGET,
-  changeOrigin: true, // Absolutely essential for virtual hosted sites
-  ws: true, // Proxy websockets
-  
-  onProxyReq: (proxyReq, req, res) => {
-    // Set headers to make the request look like it's coming from a real browser
-    proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36');
-    proxyReq.setHeader('Accept', 'application/json, text/plain, */*');
-    proxyReq.setHeader('Accept-Language', 'en-US,en;q=0.8');
-    proxyReq.setHeader('Connection', 'keep-alive');
-    
-    // Rewrite the 'host' header to the target's host
-    proxyReq.setHeader('host', new URL(API_TARGET).host);
+// Custom Buffered Axios Proxy Middleware
+app.use('/webhook/*', async (req, res) => {
+  const targetUrl = `${API_TARGET}${req.originalUrl}`;
+  console.log(`[BUFFERED PROXY] ${req.method} -> ${targetUrl}`);
 
-    console.log(`[PROXY] Requesting: ${req.method} ${req.originalUrl}`);
-    
-    if (req.body && Object.keys(req.body).length > 0) {
-        const bodyData = JSON.stringify(req.body);
-        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-        proxyReq.write(bodyData);
-    }
-  },
-  
-  onProxyRes: (proxyRes, req, res) => {
-    console.log(`[PROXY] Response from ${API_TARGET}: ${proxyRes.statusCode}`);
-  },
+  try {
+    const response = await axios({
+      method: req.method,
+      url: targetUrl,
+      data: req.body,
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': req.headers['user-agent'],
+      },
+      // IMPORTANT: We receive the response as a buffer to handle any data type
+      responseType: 'arraybuffer', 
+      timeout: 60000,
+    });
 
-  onError: (err, req, res) => {
-    console.error('--- PROXY ERROR ---');
-    console.error(err);
-    if (!res.headersSent) {
-      res.status(502).json({ 
-        error: 'Proxy Error', 
-        message: 'Could not connect to webhook server.', 
-        details: err.message,
-        code: err.code
-      });
+    // Forward headers from the target
+    res.set(response.headers);
+    // Ensure CORS is allowed
+    res.set('Access-Control-Allow-Origin', '*');
+    
+    // Send the complete response buffer
+    res.status(response.status).send(response.data);
+
+  } catch (error) {
+    console.error('--- [BUFFERED PROXY ERROR] ---');
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      // Forward the error response from the target
+      res.status(error.response.status).set(error.response.headers).send(error.response.data);
+    } else {
+      console.error('Error Code:', error.code);
+      if (!res.headersSent) {
+        res.status(502).json({
+          error: 'Proxy Error',
+          message: 'Could not connect to the webhook server.',
+          code: error.code || 'UNKNOWN'
+        });
+      }
     }
-  },
-  
-  // Increase timeouts
-  proxyTimeout: 30000, // 30 seconds
-  timeout: 30000, // 30 seconds
+  }
 });
-
-app.use('/webhook', webhookProxy);
 
 // Serve user-facing index.html for all other routes
 app.get('*', (req, res) => {
@@ -90,6 +87,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`✅ Health check available at /health`);
     console.log(`🔑 Admin panel available at /admin`);
-    console.log(`🔗 Webhook proxy enabled on /webhook/*`);
+    console.log(`🔗 Buffered Axios proxy enabled on /webhook/*`);
     console.log('========================================');
 });

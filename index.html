@@ -1189,32 +1189,31 @@
 // Get current user data
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     
-    // Function to process webhook URLs - SIMPLE VERSION
+    // Function to process webhook URLs
     function processWebhookUrl(url) {
-      // Luôn sử dụng relative path để gọi qua proxy của chính server
-      // Ví dụ: /webhook/zalo-automation
-      // Dù ở localhost hay production, nó sẽ tự động trỏ đến server đang chạy
       if (!url) return '';
       
+      // If it's a full URL, use it directly via our proxy logic
+      if (url.startsWith('http')) {
+        try {
+          // Extract the path for the proxy. Example: /webhook/info-zalo-cuong
+          return new URL(url).pathname;
+        } catch (e) {
+          console.error("Invalid webhook URL provided:", url);
+          return ''; // Return empty string for invalid URLs
+        }
+      }
+      
+      // Handle old relative paths if they exist
       if (url.startsWith('/api/webhook/')) {
         return url.replace('/api/webhook/', '/webhook/');
       }
       
-      if (url.startsWith('http')) {
-        try {
-          const urlObj = new URL(url);
-          return urlObj.pathname; // Chỉ lấy phần path, ví dụ /webhook/zalo-automation
-        } catch (e) {
-          // Nếu URL không hợp lệ, trả về URL gốc để debug
-          return url;
-        }
-      }
-      
-      // Nếu đã là /webhook/ rồi thì giữ nguyên
+      // If it's already a correct relative path, return it as is
       return url;
     }
 
-    // Get webhooks from current user or use defaults (n8n format)
+    // Get webhooks from current user or use defaults
     const rawScanWebhook = currentUser.scanWebhook || '/webhook/zalo-automation';
     const rawSendWebhook = currentUser.sendWebhook || '/webhook/zalo-sent-text-image';
     const rawPostWebhook = currentUser.postWebhook || '/webhook/zalo-post-group';
@@ -1227,7 +1226,7 @@
     const inviteWebhook = processWebhookUrl(rawInviteWebhook);
     const scanMembersWebhook = processWebhookUrl(rawScanMembersWebhook);
     
-    console.log('Webhook URLs configured:');
+    console.log('Webhook URLs configured for proxy:');
     console.log('- scanWebhook:', scanWebhook);
     console.log('- sendWebhook:', sendWebhook);
     console.log('- postWebhook:', postWebhook);
@@ -2795,13 +2794,12 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         console.log('Starting group scan with webhook:', scanWebhook);
         console.log('Nick selected:', nick);
         
-        // Simple POST with FormData (like your old system)
-        const formData = new FormData();
-        formData.append('nick', nick);
-        
         const res = await fetch(scanWebhook, { 
           method: 'POST', 
-          body: formData
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nick }) 
         });
         
         console.log('Response status:', res.status);
@@ -2995,9 +2993,13 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       selectedGroups = [];
 
       try {
-        const formData = new FormData();
-        formData.append('nick', nick);
-        const res = await fetch(scanWebhook, { method: 'POST', body: formData });
+        const res = await fetch(scanWebhook, { 
+          method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nick }) 
+        });
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -3581,9 +3583,13 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       targetGroups = [];
 
       try {
-        const formData = new FormData();
-        formData.append('nick', nick);
-        const res = await fetch(scanWebhook, { method: 'POST', body: formData });
+        const res = await fetch(scanWebhook, { 
+          method: 'POST', 
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nick }) 
+        });
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -3881,3 +3887,4 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
   </script>
 </body>
 </html>
+
