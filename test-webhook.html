@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Webhook</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+    <h1 class="text-2xl font-bold mb-4">Test Webhook Connection</h1>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nick</label>
+        <input type="text" id="nick" value="test" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Webhook URL</label>
+        <input type="text" id="webhookUrl" value="/proxy/webhook/zalo-automation" class="w-full border border-gray-300 rounded-lg px-4 py-2">
+      </div>
+      
+      <button onclick="testWebhook()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg">
+        Test Webhook
+      </button>
+      
+      <div id="status" class="hidden p-4 rounded-lg"></div>
+      
+      <div id="result" class="hidden">
+        <h3 class="font-semibold mb-2">Response:</h3>
+        <pre id="responseContent" class="bg-gray-100 p-4 rounded-lg overflow-auto max-h-96"></pre>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    async function testWebhook() {
+      const nick = document.getElementById('nick').value;
+      const webhookUrl = document.getElementById('webhookUrl').value;
+      const statusDiv = document.getElementById('status');
+      const resultDiv = document.getElementById('result');
+      const responseContent = document.getElementById('responseContent');
+      
+      // Reset UI
+      statusDiv.className = 'p-4 rounded-lg bg-blue-100 text-blue-700';
+      statusDiv.textContent = 'Sending request...';
+      statusDiv.classList.remove('hidden');
+      resultDiv.classList.add('hidden');
+      
+      try {
+        console.log('Testing webhook:', webhookUrl);
+        console.log('With nick:', nick);
+        
+        // Create FormData
+        const formData = new FormData();
+        formData.append('nick', nick);
+        
+        // Make request
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          body: formData
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
+        if (response.ok) {
+          statusDiv.className = 'p-4 rounded-lg bg-green-100 text-green-700';
+          statusDiv.textContent = `Success! Status: ${response.status}`;
+          
+          // Try to parse as JSON for pretty display
+          try {
+            const jsonData = JSON.parse(responseText);
+            responseContent.textContent = JSON.stringify(jsonData, null, 2);
+          } catch {
+            responseContent.textContent = responseText;
+          }
+          
+          resultDiv.classList.remove('hidden');
+        } else {
+          statusDiv.className = 'p-4 rounded-lg bg-red-100 text-red-700';
+          statusDiv.textContent = `Error! Status: ${response.status}`;
+          responseContent.textContent = responseText;
+          resultDiv.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        statusDiv.className = 'p-4 rounded-lg bg-red-100 text-red-700';
+        statusDiv.textContent = `Error: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>

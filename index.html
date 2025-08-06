@@ -2791,26 +2791,118 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       groupSelect.innerHTML = '';
 
       try {
-        const formData = new FormData();
-        formData.append('nick', nick);
-
-        const res = await fetch(scanWebhook, { 
-          method: 'POST', 
-          body: formData 
-        });
+        console.log('Starting group scan with webhook:', scanWebhook);
+        console.log('Nick selected:', nick);
         
-        if (!res.ok) throw new Error('Network error');
-        const raw = await res.json();
+        // Try both FormData and JSON to see which works
+        let res;
+        
+        // First try with FormData (as n8n might expect this)
+        try {
+          const formData = new FormData();
+          formData.append('nick', nick);
+          
+          console.log('Trying with FormData...');
+          res = await fetch(scanWebhook, { 
+            method: 'POST', 
+            body: formData,
+            mode: 'cors',
+            credentials: 'same-origin'
+          });
+          
+          // If status is 400 or 415, n8n might expect JSON instead
+          if (res.status === 400 || res.status === 415) {
+            console.log('FormData failed with status:', res.status, '- trying JSON...');
+            
+            // Try with JSON
+            res = await fetch(scanWebhook, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ nick }),
+              mode: 'cors',
+              credentials: 'same-origin'
+            });
+          }
+        } catch (formError) {
+          console.error('FormData request failed:', formError);
+          console.log('Trying with JSON as fallback...');
+          
+          // Fallback to JSON
+          res = await fetch(scanWebhook, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nick }),
+            mode: 'cors',
+            credentials: 'same-origin'
+          });
+        }
+        
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Response error:', errorText);
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const responseText = await res.text();
+        console.log('Raw response text:', responseText);
+        
+        let raw;
+        try {
+          raw = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          console.error('Invalid JSON response:', responseText);
+          throw new Error('Invalid JSON response from webhook');
+        }
+        
+        console.log('Parsed response:', raw);
 
         let groups = [];
+        
+        // Handle direct array format from n8n
         if (Array.isArray(raw)) {
-          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ id: i.groupId || i.groupid || i.id, name: i.name || i.groupName || 'Không tên' }));
-        } else if (raw.groups) {
-          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => typeof g === 'string' ? { id: g, name: g } : { id: g.id || g.groupId, name: g.name || g.groupName || g.id });
+          groups = raw.filter(item => {
+            // Support multiple field names for group ID
+            return item.groupId || item.groupid || item.id || item.group_id;
+          }).map(item => ({
+            id: item.groupId || item.groupid || item.id || item.group_id,
+            name: item.name || item.groupName || item.group_name || 'Không tên'
+          }));
+        } 
+        // Handle object with groups property
+        else if (raw && typeof raw === 'object' && raw.groups) {
+          if (Array.isArray(raw.groups)) {
+            groups = raw.groups.map(g => {
+              if (typeof g === 'string') {
+                return { id: g, name: g };
+              }
+              return {
+                id: g.groupId || g.groupid || g.id || g.group_id,
+                name: g.name || g.groupName || g.group_name || g.id || 'Không tên'
+              };
+            });
+          }
         }
+        // Handle single object format
+        else if (raw && typeof raw === 'object' && (raw.groupId || raw.id)) {
+          groups = [{
+            id: raw.groupId || raw.id,
+            name: raw.name || raw.groupName || 'Không tên'
+          }];
+        }
+
+        console.log('Processed groups:', groups);
 
         if (groups.length === 0) {
           toggle(emptyMsg, true);
+          console.log('No groups found in response');
         } else {
           toggle(emptyMsg, false);
           groups.forEach(g => {
@@ -2818,11 +2910,24 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             groupSelect.insertAdjacentHTML('beforeend', `<option value="${g.id}">${g.name}</option>`);
           });
           toggle(actionsBox, true);
+          console.log(`Successfully loaded ${groups.length} groups`);
         }
         toggle(resultSec, true);
       } catch (err) {
-        console.error(err);
-        alert('Quét nhóm thất bại, vui lòng thử lại.');
+        console.error('Error during group scan:', err);
+        console.error('Error stack:', err.stack);
+        
+        // More specific error messages
+        let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
+        if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Không thể kết nối đến webhook. Vui lòng kiểm tra kết nối mạng.';
+        } else if (err.message.includes('JSON')) {
+          errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.';
+        } else if (err.message.includes('HTTP error')) {
+          errorMessage = `Lỗi từ server: ${err.message}`;
+        }
+        
+        alert(errorMessage);
       } finally {
         scanBtn.disabled = false;
         toggle(spinner, false);

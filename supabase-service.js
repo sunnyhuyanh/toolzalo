@@ -165,9 +165,6 @@ class SupabaseService {
             fullName: 'Administrator',
             isAdmin: true,
             scanWebhook: '/webhook/zalo-automation',
-            sendWebhook: '/webhook/zalo-sent-text-image',
-            postWebhook: '/webhook/zalo-post-group',
-            inviteWebhook: '/webhook/zalo-invite-member',
             scanMembersWebhook: '/webhook/zalo-scan-members',
             nicks: ['Admin']
           }
@@ -220,9 +217,6 @@ class SupabaseService {
           password: hashedPassword,
           full_name: userData.fullName || null,
           scan_webhook: userData.scanWebhook || '/webhook/zalo-automation',
-          send_webhook: userData.sendWebhook || '/webhook/zalo-sent-text-image',
-          post_webhook: userData.postWebhook || '/webhook/zalo-post-group',
-          invite_webhook: userData.inviteWebhook || '/webhook/zalo-invite-member',
           scan_members_webhook: userData.scanMembersWebhook || '/webhook/zalo-scan-members',
           status: userData.status || 'active',
           is_admin: userData.isAdmin || false
