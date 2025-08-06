@@ -1,20 +1,6 @@
-const fs = require('fs');
-const util = require('util');
-const logFile = fs.createWriteStream(__dirname + '/debug.log', { flags: 'w' });
-const logStdout = process.stdout;
-
-console.log = function(d) {
-  logFile.write(util.format(d) + '\n');
-  logStdout.write(util.format(d) + '\n');
-};
-
+// Error handling for production
 process.on('uncaughtException', (err, origin) => {
-  fs.writeSync(
-    process.stderr.fd,
-    `Caught exception: ${err}\n` +
-    `Exception origin: ${origin}`
-  );
-  console.log(`Caught exception: ${err}\n` + `Exception origin: ${origin}`);
+  console.error(`Caught exception: ${err}\n` + `Exception origin: ${origin}`);
   process.exit(1);
 });
 
@@ -28,7 +14,7 @@ const path = require('path');
 const axios = require('axios');
 
 const app = express();
-const PORT = 3000; // Hardcoded for Railway stability
+const PORT = process.env.PORT || 3000; // Use Railway's PORT or fallback to 3000
 const API_TARGET = 'https://n8nhosting-60996536.phoai.vn';
 
 // Middleware
@@ -107,10 +93,13 @@ app.get('*', (req, res) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
+    const host = process.env.RAILWAY_PUBLIC_DOMAIN || `localhost:${PORT}`;
     console.log('========================================');
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on ${process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + host : 'http://' + host}`);
     console.log(`✅ Health check available at /health`);
     console.log(`🔑 Admin panel available at /admin`);
     console.log(`🔗 Buffered Axios proxy enabled on /webhook/*`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔧 Port: ${PORT}`);
     console.log('========================================');
 });
