@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Quản lý người dùng</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-info {
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-value.total { color: #3b82f6; }
+        .stat-value.active { color: #10b981; }
+        .stat-value.blocked { color: #ef4444; }
+
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        /* Main Panel */
+        .main-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .btn-add {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover {
+            background: #2563eb;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            padding: 12px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 15px 20px;
+            font-size: 14px;
+            color: #111827;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .webhook-cell {
+            max-width: 250px;
+        }
+
+        .webhook-item {
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+
+        .webhook-label {
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.blocked {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #f3f4f6;
+            color: #3b82f6;
+        }
+
+        .btn-edit:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-delete {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: #fee2e2;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #3b82f6;
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .webhook-section {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .webhook-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: #1f2937;
+            font-size: 16px;
+        }
+
+        .nick-section {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .nick-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: #1f2937;
+            font-size: 16px;
+        }
+
+        .nick-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .nick-tag {
+            background: white;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nick-tag .remove {
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .nick-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nick-input-group input {
+            flex: 1;
+        }
+
+        .btn-add-nick {
+            padding: 10px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-add-nick:hover {
+            background: #059669;
+        }
+
+        .status-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-save {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #2563eb;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">🎯 Admin Panel - Quản lý người dùng</div>
+            <div class="header-right">
+                <div class="admin-info">👤 Administrator</div>
+                <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Stats Section -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-label">Tổng người dùng</div>
+                <div class="stat-value total">
+                    <span class="stat-icon">👥</span>
+                    <span id="totalUsers">2</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Đang hoạt động</div>
+                <div class="stat-value active">
+                    <span class="stat-icon">✅</span>
+                    <span id="activeUsers">2</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tạm khóa</div>
+                <div class="stat-value blocked">
+                    <span class="stat-icon">🚫</span>
+                    <span id="blockedUsers">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Danh sách người dùng</h2>
+                <button class="btn-add" onclick="showAddModal()">
+                    ➕ Thêm người dùng mới
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên đăng nhập</th>
+                            <th>Họ tên</th>
+                            <th>Webhook</th>
+                            <th>Nick Zalo</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Thêm người dùng mới</h3>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    
+                    <div class="form-group">
+                        <label>Tên đăng nhập <span class="required">*</span></label>
+                        <input type="text" id="username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu <span class="required">*</span></label>
+                        <input type="password" id="password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Họ tên</label>
+                        <input type="text" id="fullName">
+                    </div>
+
+                    <!-- Webhook Section -->
+                    <div class="webhook-section">
+                        <h4>🔗 Cấu hình Webhook</h4>
+                        
+                        <div class="form-group">
+                            <label>Webhook quét nhóm</label>
+                            <input type="text" id="scanWebhook" placeholder="/webhook/zalo-automation">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Webhook gửi tin nhắn</label>
+                            <input type="text" id="sendWebhook" placeholder="/webhook/zalo-sent-text-image">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Webhook đăng bài</label>
+                            <input type="text" id="postWebhook" placeholder="/webhook/zalo-post-group">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Webhook mời thành viên</label>
+                            <input type="text" id="inviteWebhook" placeholder="/webhook/zalo-invite-member">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Webhook quét thành viên</label>
+                            <input type="text" id="scanMembersWebhook" placeholder="/webhook/zalo-scan-members">
+                        </div>
+                    </div>
+
+                    <!-- Nick Section -->
+                    <div class="nick-section">
+                        <h4>👤 Danh sách Nick Zalo</h4>
+                        
+                        <div class="nick-list" id="nickList">
+                            <!-- Nick tags will be added here -->
+                        </div>
+
+                        <div class="nick-input-group">
+                            <input type="text" id="nickInput" placeholder="Nhập tên nick Zalo">
+                            <button type="button" class="btn-add-nick" onclick="addNick()">
+                                ➕ Thêm nick
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <div class="status-group">
+                            <label class="radio-label">
+                                <input type="radio" name="status" value="active" checked>
+                                Hoạt động
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="status" value="blocked">
+                                Tạm khóa
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-save" onclick="saveUser()">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        let users = [];
+        let currentNicks = [];
+        let editingUserId = null;
+
+        // Check authentication
+        function checkAuth() {
+            const adminAuth = sessionStorage.getItem('adminAuth');
+            if (!adminAuth) {
+                window.location.href = '/admin';
+                return false;
+            }
+            return true;
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                sessionStorage.removeItem('adminAuth');
+                window.location.href = '/admin';
+            }
+        }
+
+        // Load users
+        function loadUsers() {
+            users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            // Add admin if not exists
+            if (!users.find(u => u.username === 'admin')) {
+                users.push({
+                    id: 'admin',
+                    username: 'admin',
+                    password: 'admin@123',
+                    fullName: 'Administrator',
+                    scanWebhook: '/api/webhook/zalo-automation',
+                    sendWebhook: '/api/webhook/zalo-sent-text-image',
+                    postWebhook: '/api/webhook/zalo-post-group',
+                    inviteWebhook: '/api/webhook/zalo-invite-member',
+                    scanMembersWebhook: '/api/webhook/zalo-scan-members',
+                    nicks: [],
+                    status: 'active',
+                    isAdmin: true,
+                    createdAt: new Date().toISOString()
+                });
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            renderTable();
+            updateStats();
+        }
+
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.fullName || '-'}</td>
+                    <td class="webhook-cell">
+                        <div class="webhook-item"><span class="webhook-label">Quét:</span> ${truncateText(user.scanWebhook || 'https://n8nhosting-609965...', 30)}</div>
+                        <div class="webhook-item"><span class="webhook-label">Tin nhắn:</span> ${truncateText(user.sendWebhook || 'https://n8nhosting-609965...', 30)}</div>
+                        <div class="webhook-item"><span class="webhook-label">Đăng bài:</span> ${truncateText(user.postWebhook || 'https://n8nhosting-609965...', 30)}</div>
+                        <div class="webhook-item"><span class="webhook-label">Mời TV:</span> ${truncateText(user.inviteWebhook || 'https://n8nhosting-609965...', 30)}</div>
+                        <div class="webhook-item"><span class="webhook-label">Quét TV:</span> ${truncateText(user.scanMembersWebhook || '/api/webhook/zalo-scan-me...', 30)}</div>
+                    </td>
+                    <td>${user.nicks && user.nicks.length > 0 ? user.nicks.join(', ') : '-'}</td>
+                    <td>
+                        <span class="status-badge ${user.status === 'active' ? 'active' : 'blocked'}">
+                            ${user.status === 'active' ? 'Hoạt động' : 'Tạm khóa'}
+                        </span>
+                    </td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editUser('${user.id}')">Sửa</button>
+                            <button class="btn-action btn-delete" onclick="deleteUser('${user.id}')">Xóa</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('activeUsers').textContent = users.filter(u => u.status === 'active').length;
+            document.getElementById('blockedUsers').textContent = users.filter(u => u.status === 'blocked').length;
+        }
+
+        // Show add modal
+        function showAddModal() {
+            editingUserId = null;
+            document.getElementById('modalTitle').textContent = 'Thêm người dùng mới';
+            document.getElementById('userForm').reset();
+            currentNicks = [];
+            renderNicks();
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        // Edit user
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+
+            editingUserId = userId;
+            document.getElementById('modalTitle').textContent = 'Sửa thông tin người dùng';
+            
+            document.getElementById('username').value = user.username;
+            document.getElementById('password').value = user.password;
+            document.getElementById('fullName').value = user.fullName || '';
+            document.getElementById('scanWebhook').value = user.scanWebhook || '';
+            document.getElementById('sendWebhook').value = user.sendWebhook || '';
+            document.getElementById('postWebhook').value = user.postWebhook || '';
+            document.getElementById('inviteWebhook').value = user.inviteWebhook || '';
+            document.getElementById('scanMembersWebhook').value = user.scanMembersWebhook || '';
+            
+            currentNicks = user.nicks || [];
+            renderNicks();
+            
+            document.querySelector(`input[name="status"][value="${user.status}"]`).checked = true;
+            
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            if (userId === 'admin') {
+                alert('Không thể xóa tài khoản admin!');
+                return;
+            }
+
+            if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+                users = users.filter(u => u.id !== userId);
+                localStorage.setItem('users', JSON.stringify(users));
+                loadUsers();
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('userModal').classList.remove('active');
+        }
+
+        // Add nick
+        function addNick() {
+            const nickInput = document.getElementById('nickInput');
+            const nick = nickInput.value.trim();
+            
+            if (nick && !currentNicks.includes(nick)) {
+                currentNicks.push(nick);
+                renderNicks();
+                nickInput.value = '';
+            }
+        }
+
+        // Remove nick
+        function removeNick(nick) {
+            currentNicks = currentNicks.filter(n => n !== nick);
+            renderNicks();
+        }
+
+        // Render nicks
+        function renderNicks() {
+            const nickList = document.getElementById('nickList');
+            nickList.innerHTML = currentNicks.map(nick => `
+                <div class="nick-tag">
+                    ${nick}
+                    <span class="remove" onclick="removeNick('${nick}')">×</span>
+                </div>
+            `).join('');
+        }
+
+        // Save user
+        function saveUser() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                alert('Vui lòng nhập tên đăng nhập và mật khẩu!');
+                return;
+            }
+
+            // Check duplicate username
+            if (!editingUserId && users.find(u => u.username === username)) {
+                alert('Tên đăng nhập đã tồn tại!');
+                return;
+            }
+
+            const userData = {
+                id: editingUserId || Date.now().toString(),
+                username: username,
+                password: password,
+                fullName: document.getElementById('fullName').value.trim(),
+                scanWebhook: document.getElementById('scanWebhook').value.trim() || '/webhook/zalo-automation',
+                sendWebhook: document.getElementById('sendWebhook').value.trim() || '/webhook/zalo-sent-text-image',
+                postWebhook: document.getElementById('postWebhook').value.trim() || '/webhook/zalo-post-group',
+                inviteWebhook: document.getElementById('inviteWebhook').value.trim() || '/webhook/zalo-invite-member',
+                scanMembersWebhook: document.getElementById('scanMembersWebhook').value.trim() || '/webhook/zalo-scan-members',
+                nicks: currentNicks,
+                status: document.querySelector('input[name="status"]:checked').value,
+                createdAt: editingUserId ? users.find(u => u.id === editingUserId).createdAt : new Date().toISOString()
+            };
+
+            if (editingUserId) {
+                const index = users.findIndex(u => u.id === editingUserId);
+                users[index] = userData;
+            } else {
+                users.push(userData);
+            }
+
+            localStorage.setItem('users', JSON.stringify(users));
+            loadUsers();
+            closeModal();
+            alert(editingUserId ? 'Cập nhật thành công!' : 'Thêm người dùng thành công!');
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Truncate text
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        // Handle Enter key in nick input
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('nickInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addNick();
+                }
+            });
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            if (checkAuth()) {
+                loadUsers();
+            }
+        });
+    </script>
+</body>
+</html>

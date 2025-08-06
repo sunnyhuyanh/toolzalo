@@ -21,6 +21,7 @@
     "concurrently": "^7.6.0",
     "html-minifier": "^4.0.0",
     "live-server": "^1.2.2",
+    "nodemon": "^3.1.10",
     "terser": "^5.16.0"
   },
   "dependencies": {

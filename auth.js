@@ -41,7 +41,7 @@ class AuthAPI {
         createdAt: new Date().toISOString()
       };
       
-      localStorage.setItem('users', JSON.stringify([sampleUser]));
+      localStorage.setItem('users', JSON.stringify([adminUser, sampleUser]));
     }
   }
 
