@@ -259,13 +259,12 @@
     const nicksList = $('nicksList');
     
     document.addEventListener('DOMContentLoaded', async () => {
-      // Check if user is admin
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const isLoggedIn = sessionStorage.getItem('zalo_scanner_logged_in');
+      // Check if admin is logged in
+      const adminAuth = sessionStorage.getItem('adminAuth');
       
-      if (!isLoggedIn || !currentUser.isAdmin) {
-        // Redirect to login page instead of showing alert
-        window.location.href = '/?redirect=admin';
+      if (!adminAuth) {
+        // Redirect to admin login page
+        window.location.href = '/admin';
         return;
       }
       

@@ -43,11 +43,15 @@ app.get('/health', (req, res) => {
 
 // Admin routes
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(__dirname, 'admin-login.html'));
 });
 
 app.get('/admin-dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
+});
+
+app.get('/admin-panel', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // Custom Buffered Axios Proxy Middleware

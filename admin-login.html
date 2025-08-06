@@ -293,9 +293,9 @@
                     
                     showAlert('Đăng nhập thành công!', 'success');
                     
-                    // Redirect to admin dashboard
+                    // Redirect to admin panel
                     setTimeout(() => {
-                        window.location.href = '/admin-dashboard.html';
+                        window.location.href = '/admin-panel';
                     }, 1000);
                 } else {
                     showAlert('Tên đăng nhập hoặc mật khẩu không đúng!');
@@ -308,7 +308,7 @@
         window.addEventListener('load', () => {
             const adminAuth = sessionStorage.getItem('adminAuth');
             if (adminAuth) {
-                window.location.href = '/admin-dashboard.html';
+                window.location.href = '/admin-panel';
             }
         });
     </script>

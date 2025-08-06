@@ -1,0 +1,9 @@
+========================================
+🚀 Server running on http://localhost:3000
+✅ Health check available at /health
+🔑 Admin panel available at /admin
+🔗 Buffered Axios proxy enabled on /webhook/*
+========================================
+[BUFFERED PROXY] POST -> https://n8nhosting-60996536.phoai.vn/webhook/info-zalo-cuong
+[BUFFERED PROXY] POST -> https://n8nhosting-60996536.phoai.vn/webhook/info-zalo-cuong
+[BUFFERED PROXY] POST -> https://n8nhosting-60996536.phoai.vn/webhook/info-zalo-cuong
