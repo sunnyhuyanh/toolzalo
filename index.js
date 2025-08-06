@@ -12,10 +12,19 @@ process.on('uncaughtException', (err, origin) => {
 const express = require('express');
 const path = require('path');
 const axios = require('axios');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Use Railway's PORT or fallback to 3000
 const API_TARGET = 'https://n8nhosting-60996536.phoai.vn';
+
+// CORS configuration
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -40,48 +49,89 @@ app.get('/admin-panel', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
+// Handle OPTIONS requests for CORS preflight
+app.options('/webhook/*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
+});
+
 // Custom Buffered Axios Proxy Middleware
 app.use('/webhook/*', async (req, res) => {
   const targetUrl = `${API_TARGET}${req.originalUrl}`;
-  console.log(`[BUFFERED PROXY] ${req.method} -> ${targetUrl}`);
+  console.log(`[PROXY] ${req.method} -> ${targetUrl}`);
+  
+  // Log request body for debugging
+  if (req.body) {
+    console.log('[PROXY] Request body:', JSON.stringify(req.body).substring(0, 200));
+  }
 
   try {
+    // Prepare headers - forward all relevant headers
+    const proxyHeaders = {
+      'Content-Type': req.headers['content-type'] || 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': req.headers['user-agent'] || 'Zalo-Automation-Proxy/1.0',
+    };
+    
+    // Remove headers that shouldn't be forwarded
+    const headersToSkip = ['host', 'connection', 'content-length'];
+    Object.keys(req.headers).forEach(key => {
+      if (!headersToSkip.includes(key.toLowerCase()) && !proxyHeaders[key]) {
+        proxyHeaders[key] = req.headers[key];
+      }
+    });
+
     const response = await axios({
       method: req.method,
       url: targetUrl,
       data: req.body,
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': req.headers['user-agent'],
-      },
-      // IMPORTANT: We receive the response as a buffer to handle any data type
-      responseType: 'arraybuffer', 
+      headers: proxyHeaders,
+      responseType: 'arraybuffer',
       timeout: 60000,
+      validateStatus: () => true, // Accept any status code
+      maxRedirects: 5,
     });
 
-    // Forward headers from the target
-    res.set(response.headers);
-    // Ensure CORS is allowed
-    res.set('Access-Control-Allow-Origin', '*');
+    console.log(`[PROXY] Response status: ${response.status}`);
     
-    // Send the complete response buffer
+    // Set CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Forward response headers
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    
+    // Send response
     res.status(response.status).send(response.data);
 
   } catch (error) {
-    console.error('--- [BUFFERED PROXY ERROR] ---');
+    console.error('[PROXY ERROR]:', error.message);
+    
     if (error.response) {
-      console.error('Status:', error.response.status);
-      // Forward the error response from the target
-      res.status(error.response.status).set(error.response.headers).send(error.response.data);
+      console.error('[PROXY ERROR] Response status:', error.response.status);
+      console.error('[PROXY ERROR] Response data:', error.response.data?.toString()?.substring(0, 500));
+      
+      res.set('Access-Control-Allow-Origin', '*');
+      res.status(error.response.status).send(error.response.data);
+    } else if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
+      console.error('[PROXY ERROR] Connection issue:', error.code);
+      res.status(504).json({
+        error: 'Gateway Timeout',
+        message: 'The webhook server took too long to respond or connection was reset',
+        code: error.code
+      });
     } else {
-      console.error('Error Code:', error.code);
-      if (!res.headersSent) {
-        res.status(502).json({
-          error: 'Proxy Error',
-          message: 'Could not connect to the webhook server.',
-          code: error.code || 'UNKNOWN'
-        });
-      }
+      console.error('[PROXY ERROR] Unknown error:', error);
+      res.status(502).json({
+        error: 'Bad Gateway',
+        message: 'Could not connect to the webhook server',
+        details: error.message
+      });
     }
   }
 });
