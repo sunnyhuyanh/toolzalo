@@ -1192,14 +1192,20 @@
     // Function to process webhook URLs for proxy if needed
     function processWebhookUrl(url) {
       if (!url) return url;
-      const isLocal = window.location.hostname === 'localhost';
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       
-      // Nếu là localhost và URL là relative path, sử dụng proxy
+      // Production: Nếu URL là relative path (/webhook/...), chuyển thành full URL
+      if (!isLocal && (url.startsWith('/api/webhook/') || url.startsWith('/webhook/'))) {
+        // Trên production, chuyển relative path thành full n8n URL
+        return `https://n8nhosting-60996536.phoai.vn${url}`;
+      }
+      
+      // Localhost: Nếu URL là relative path, sử dụng proxy
       if (isLocal && (url.startsWith('/api/webhook/') || url.startsWith('/webhook/'))) {
         return `/proxy${url}`;
       }
       
-      // Nếu là localhost và URL là full HTTP URL, chuyển sang proxy  
+      // Localhost: Nếu URL là full HTTP URL, chuyển sang proxy  
       if (isLocal && url.startsWith('http')) {
         try {
           const urlObj = new URL(url);
@@ -1209,7 +1215,12 @@
         }
       }
       
-      // Nếu không phải localhost, sử dụng URL gốc
+      // Nếu URL đã là full URL (https://...), giữ nguyên
+      if (url.startsWith('http')) {
+        return url;
+      }
+      
+      // Default: return as is
       return url;
     }
 
