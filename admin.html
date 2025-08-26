@@ -165,27 +165,30 @@
           <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Webhook quét nhóm</label>
-              <input type="text" id="scanWebhook" name="scanWebhook" placeholder="/webhook/zalo-automation" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+              <div class="flex gap-2">
+                <input type="text" id="scanWebhook" name="scanWebhook" placeholder="https://n8nhosting-60996536.phoai.vn/webhook/zalo-automation" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+                <button type="button" onclick="testWebhook('scanWebhook')" class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm">Test</button>
+              </div>
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Webhook gửi tin nhắn</label>
-              <input type="text" id="sendWebhook" name="sendWebhook" placeholder="/webhook/zalo-sent-text-image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+              <input type="text" id="sendWebhook" name="sendWebhook" placeholder="https://n8nhosting-60996536.phoai.vn/webhook/zalo-sent-text-image" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Webhook đăng bài</label>
-              <input type="text" id="postWebhook" name="postWebhook" placeholder="/webhook/zalo-post-group" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+              <input type="text" id="postWebhook" name="postWebhook" placeholder="https://n8nhosting-60996536.phoai.vn/webhook/zalo-post-group" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Webhook mời thành viên</label>
-              <input type="text" id="inviteWebhook" name="inviteWebhook" placeholder="/webhook/zalo-invite-member" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+              <input type="text" id="inviteWebhook" name="inviteWebhook" placeholder="https://n8nhosting-60996536.phoai.vn/webhook/zalo-invite-member" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Webhook quét thành viên</label>
-              <input type="text" id="scanMembersWebhook" name="scanMembersWebhook" placeholder="/webhook/zalo-scan-members" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
+              <input type="text" id="scanMembersWebhook" name="scanMembersWebhook" placeholder="https://n8nhosting-60996536.phoai.vn/webhook/zalo-scan-members" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
           </div>
         </div>
@@ -258,6 +261,56 @@
     const addNickBtn = $('addNickBtn');
     const nicksList = $('nicksList');
     
+    // Test webhook function
+    async function testWebhook(webhookInputId) {
+      const webhookUrl = $(webhookInputId).value;
+      if (!webhookUrl) {
+        alert('Vui lòng nhập URL webhook trước khi test');
+        return;
+      }
+      
+      // Process webhook URL to use proxy
+      let proxyUrl = webhookUrl;
+      if (webhookUrl.startsWith('http')) {
+        try {
+          const url = new URL(webhookUrl);
+          proxyUrl = `${url.pathname}${url.search || ''}`;
+        } catch (e) {
+          console.error('Invalid webhook URL:', webhookUrl);
+          alert('URL webhook không hợp lệ');
+          return;
+        }
+      }
+      
+      try {
+        console.log('Testing webhook via proxy:', proxyUrl);
+        const response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            test: true,
+            nick: 'test',
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        console.log('Webhook test response status:', response.status);
+        const responseText = await response.text();
+        console.log('Webhook test response:', responseText);
+        
+        if (response.ok) {
+          alert(`✅ Webhook hoạt động tốt!\nStatus: ${response.status}\nResponse: ${responseText.substring(0, 100)}...`);
+        } else {
+          alert(`❌ Webhook lỗi!\nStatus: ${response.status}\nResponse: ${responseText.substring(0, 200)}...`);
+        }
+      } catch (error) {
+        console.error('Webhook test error:', error);
+        alert(`❌ Không thể kết nối đến webhook!\nLỗi: ${error.message}`);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       // Check if admin is logged in
       const adminAuth = sessionStorage.getItem('adminAuth');
@@ -412,11 +465,11 @@
         username: formData.get('username'),
         password: formData.get('password'),
         fullName: formData.get('fullName'),
-        scanWebhook: formData.get('scanWebhook') || '/api/webhook/zalo-automation',
-        sendWebhook: formData.get('sendWebhook') || '/api/webhook/zalo-sent-text-image',
-        postWebhook: formData.get('postWebhook') || '/api/webhook/zalo-post-group',
-        inviteWebhook: formData.get('inviteWebhook') || '/api/webhook/zalo-invite-member',
-        scanMembersWebhook: formData.get('scanMembersWebhook') || '/api/webhook/zalo-scan-members',
+        scanWebhook: formData.get('scanWebhook') || 'https://n8nhosting-60996536.phoai.vn/webhook/zalo-automation',
+        sendWebhook: formData.get('sendWebhook') || 'https://n8nhosting-60996536.phoai.vn/webhook/zalo-sent-text-image',
+        postWebhook: formData.get('postWebhook') || 'https://n8nhosting-60996536.phoai.vn/webhook/zalo-post-group',
+        inviteWebhook: formData.get('inviteWebhook') || 'https://n8nhosting-60996536.phoai.vn/webhook/zalo-invite-member',
+        scanMembersWebhook: formData.get('scanMembersWebhook') || 'https://n8nhosting-60996536.phoai.vn/webhook/zalo-scan-members',
         nicks: nicks,
         status: formData.get('status')
       };
@@ -595,11 +648,11 @@
       $('password').value = '';
       $('password').required = false;
       $('fullName').value = user.fullName || '';
-      $('scanWebhook').value = user.scanWebhook || '/api/webhook/zalo-automation';
-      $('sendWebhook').value = user.sendWebhook || '/api/webhook/zalo-sent-text-image';
-      $('postWebhook').value = user.postWebhook || '/api/webhook/zalo-post-group';
-      $('inviteWebhook').value = user.inviteWebhook || '/api/webhook/zalo-invite-member';
-      $('scanMembersWebhook').value = user.scanMembersWebhook || '/api/webhook/zalo-scan-members';
+      $('scanWebhook').value = user.scanWebhook || '/webhook-test/zalo-automation';
+      $('sendWebhook').value = user.sendWebhook || '/webhook-test/zalo-sent-text-image';
+      $('postWebhook').value = user.postWebhook || '/webhook-test/zalo-post-group';
+      $('inviteWebhook').value = user.inviteWebhook || '/webhook-test/zalo-invite-member';
+      $('scanMembersWebhook').value = user.scanMembersWebhook || '/webhook-test/zalo-scan-members';
       
       // Set status
       const statusRadio = document.querySelector(`input[name="status"][value="${user.status}"]`);

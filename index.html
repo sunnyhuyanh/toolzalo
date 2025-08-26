@@ -1196,8 +1196,9 @@
       // If it's a full URL, use it directly via our proxy logic
       if (url.startsWith('http')) {
         try {
-          // Extract the path for the proxy. Example: /webhook/info-zalo-cuong
-          return new URL(url).pathname;
+          // Extract the path (and keep query) for the proxy. Example: /webhook/info-zalo-cuong?key=abc
+          const u = new URL(url);
+          return `${u.pathname}${u.search || ''}`;
         } catch (e) {
           console.error("Invalid webhook URL provided:", url);
           return ''; // Return empty string for invalid URLs
@@ -1546,29 +1547,21 @@
 
     // Hàm lưu bài viết để tái sử dụng (tối đa 5 bài)
     function savePostForReuse(postData) {
-      // Tìm xem bài viết đã tồn tại chưa (dựa trên nội dung)
       const existingIndex = savedPosts.findIndex(post => post.content === postData.content);
-      
       if (existingIndex !== -1) {
-        // Nếu đã tồn tại, cập nhật thời gian và đưa lên đầu
         savedPosts.splice(existingIndex, 1);
       }
-      
-      // Thêm bài viết mới vào đầu danh sách
       savedPosts.unshift({
         id: Date.now(),
         content: postData.content,
-        images: postData.images || [],
+        images: postData.imageUrls || [], // FIX: Use imageUrls
         imageCount: postData.imageCount || 0,
         createdAt: new Date().toISOString(),
         nick: postData.nick
       });
-      
-      // Giữ tối đa 5 bài viết
       if (savedPosts.length > 5) {
         savedPosts = savedPosts.slice(0, 5);
       }
-      
       localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
       updateOldPostCount();
     }
@@ -2818,17 +2811,43 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         try {
           raw = JSON.parse(responseText);
         } catch (parseError) {
-          console.error('JSON parse error:', parseError);
-          console.error('Invalid JSON response:', responseText);
-          throw new Error('Invalid JSON response from webhook');
+          // Try to recover from non-strict JSON or text results by extracting JSON substring
+          try {
+            const startIdx = responseText.indexOf('{');
+            const endIdx = responseText.lastIndexOf('}');
+            const arrayStartIdx = responseText.indexOf('[');
+            const arrayEndIdx = responseText.lastIndexOf(']');
+            let candidate = '';
+            if (arrayStartIdx !== -1 && arrayEndIdx !== -1 && (arrayEndIdx - arrayStartIdx) > (endIdx - startIdx)) {
+              candidate = responseText.slice(arrayStartIdx, arrayEndIdx + 1);
+            } else if (startIdx !== -1 && endIdx !== -1) {
+              candidate = responseText.slice(startIdx, endIdx + 1);
+            }
+            if (candidate) {
+              raw = JSON.parse(candidate);
+            } else {
+              throw parseError;
+            }
+          } catch (recoverErr) {
+            console.error('JSON parse error:', parseError);
+            console.error('Invalid JSON response:', responseText);
+            throw new Error('Invalid JSON response from webhook');
+          }
         }
         
         console.log('Parsed response:', raw);
 
         let groups = [];
         
+        // Handle n8n's nested { "response": { "body": [...] } } structure
+        if (raw && raw.response && Array.isArray(raw.response.body)) {
+          groups = raw.response.body.map(item => ({
+            id: item.groupId || item.groupid || item.id || item.group_id,
+            name: item.name || item.groupName || item.group_name || 'Không tên'
+          }));
+        }
         // Handle direct array format from n8n
-        if (Array.isArray(raw)) {
+        else if (Array.isArray(raw)) {
           groups = raw.filter(item => {
             // Support multiple field names for group ID
             return item.groupId || item.groupid || item.id || item.group_id;
@@ -2883,7 +2902,9 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         if (err.message.includes('Failed to fetch')) {
           errorMessage = 'Không thể kết nối đến webhook. Vui lòng kiểm tra kết nối mạng.';
         } else if (err.message.includes('JSON')) {
-          errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.';
+          // Show a small snippet to help debug
+          const snippet = (typeof responseText !== 'undefined') ? String(responseText).slice(0, 200) : '';
+          errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.' + (snippet ? `\nSnippet: ${snippet}` : '');
         } else if (err.message.includes('HTTP error')) {
           errorMessage = `Lỗi từ server: ${err.message}`;
         }
@@ -2917,12 +2938,12 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ---- FEATURE 1: Gửi tin nhắn ----
-    sendMsgBtn.addEventListener('click', async () => {
+        // ---- FEATURE 1: Gửi tin nhắn ----
+        sendMsgBtn.addEventListener('click', async () => {
       const nick = nickSelect.value;
       const text = messageTxt.value.trim();
       const files = imagesInput.files;
-      if (!text) return alert('Vui lòng nhập nội dung.');
+      if (!text && files.length === 0) return alert('Vui lòng nhập nội dung hoặc chọn ảnh.');
       if (files.length > 3) return alert('Chỉ tải tối đa 3 ảnh.');
 
       sendMsgBtn.disabled = true;
@@ -2931,51 +2952,62 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       toggle(overlay, true);
 
       try {
-        const formData = new FormData();
-        formData.append('nick', nick);
-        formData.append('groupId', currentGroup.id);
-        formData.append('groupName', currentGroup.name);
-        formData.append('text', text);
-        
-        // Convert ảnh thành base64 trước khi gửi
+        const imageUrls = [];
         if (files.length > 0) {
-          const imagePromises = Array.from(files).map(file => {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onload = (e) => resolve(e.target.result);
-              reader.readAsDataURL(file);
+          overlayText.innerHTML = `Đang tải lên ${files.length} ảnh...`;
+          for (const file of files) {
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            const uploadRes = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
             });
-          });
-          
-          const imageBase64Array = await Promise.all(imagePromises);
-          imageBase64Array.forEach((imageBase64, idx) => {
-            formData.append('imageBase64_' + (idx + 1), imageBase64);
-          });
+
+            if (!uploadRes.ok) {
+              const errorData = await uploadRes.json();
+              throw new Error(`Tải ảnh lên thất bại: ${errorData.error || uploadRes.statusText}`);
+            }
+            
+            const { imageUrl } = await uploadRes.json();
+            imageUrls.push(imageUrl);
+          }
         }
+        
+        overlayText.innerHTML = 'Đang gửi tin nhắn tới webhook...';
+        
+        const payload = {
+          nick,
+          groupId: currentGroup.id,
+          groupName: currentGroup.name,
+          text,
+          imageUrls, // Send array of URLs
+        };
 
-        const res = await fetch(sendWebhook, { method: 'POST', body: formData });
-        if (!res.ok) throw new Error('Send error');
-        await res.json();
+        const res = await fetch(sendWebhook, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload) 
+        });
 
-        showSuccessMessage('Đã gửi tin nhắn thành công!');
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Send message error:', errorText);
+          throw new Error(`Webhook server returned status ${res.status}`);
+        }
+        
+        alert('Đã gửi thành công!');
         messageTxt.value = '';
         imagesInput.value = '';
         checkImageCount();
-
-        setTimeout(() => {
-          toggle(overlay, false);
-          toggle(step2, false);
-          toggle(step1, true);
-          overlayText.innerHTML = 'Đang xử lý...';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 3000);
+        
       } catch (err) {
-        console.error(err);
-        alert('Gửi tin nhắn thất bại, vui lòng thử lại.');
-        toggle(overlay, false);
+        console.error('Error sending message:', err);
+        alert(`Gửi thất bại: ${err.message}`);
       } finally {
         sendMsgBtn.disabled = false;
         toggle(spinnerSend, false);
+        toggle(overlay, false);
       }
     });
 // ---- FEATURE 2: Quét nhóm cho đăng bài ----
@@ -3347,222 +3379,118 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     // ---- FEATURE 2: Đăng bài ----
     publishBtn.addEventListener('click', async () => {
       const nick = nickSelect2.value;
-      const text = postContent.value.trim();
+      const content = postContent.value.trim();
       const files = postImages.files;
-      
-      if (!text) return alert('Vui lòng nhập nội dung bài viết.');
-      if (selectedGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm.');
-      
-      // Kiểm tra ảnh: nếu là bài cũ thì không cần tải ảnh mới, nếu là bài mới thì cần 4 ảnh
-      if (!selectedOldPost && files.length !== 4) {
-        return alert('Vui lòng tải đúng 4 ảnh cho bài viết mới.');
-      }
+
+      if (selectedGroups.length === 0) return alert('Vui lòng chọn ít nhất một nhóm để đăng bài.');
+      if (!selectedOldPost && !content && files.length === 0) return alert('Vui lòng nhập nội dung hoặc tải ảnh cho bài viết mới.');
+      if (selectedOldPost && !content && (!selectedOldPost.images || selectedOldPost.images.length === 0)) return alert('Bài viết cũ không có nội dung. Vui lòng nhập nội dung.');
+      if (!selectedOldPost && files.length < 4) return alert('Vui lòng tải lên đủ 4 ảnh cho bài viết mới.');
 
       let schedulesData = [];
-      
       if (enableSchedule.checked) {
         if (scheduleMode.value === 'once') {
-          // Chế độ đăng một lần
-          if (!scheduleDate.value || !scheduleTime.value) {
-            return alert('Vui lòng chọn ngày và giờ hẹn đăng bài.');
-          }
-          schedulesData.push({
-            type: 'once',
-            date: scheduleDate.value,
-            time: scheduleTime.value
-          });
+          if (!scheduleDate.value || !scheduleTime.value) return alert('Vui lòng chọn ngày và giờ hẹn đăng bài.');
+          schedulesData.push({ type: 'once', date: scheduleDate.value, time: scheduleTime.value });
         } else {
-          // Chế độ đăng theo tuần
           const checkedDays = document.querySelectorAll('.day-checkbox:checked');
-          if (checkedDays.length === 0) {
-            return alert('Vui lòng chọn ít nhất một ngày trong tuần.');
-          }
-          
-          // Kiểm tra xem tất cả ngày đã chọn có thời gian chưa
-          for (const dayCheckbox of checkedDays) {
-            const dayValue = dayCheckbox.value;
-            const timeInput = $('time_' + dayValue);
-            if (!timeInput.value) {
-              return alert(`Vui lòng chọn giờ cho ${dayCheckbox.nextElementSibling.textContent}.`);
-            }
-            schedulesData.push({
-              type: 'weekly',
-              dayOfWeek: parseInt(dayValue),
-              time: timeInput.value,
-              dayName: dayCheckbox.nextElementSibling.textContent
-            });
+          if (checkedDays.length === 0) return alert('Vui lòng chọn ít nhất một ngày trong tuần.');
+          for (const cb of checkedDays) {
+            const timeInput = $(`time_${cb.value}`);
+            if (!timeInput.value) return alert(`Vui lòng chọn giờ cho ${cb.nextElementSibling.textContent}.`);
+            schedulesData.push({ type: 'weekly', dayOfWeek: parseInt(cb.value), time: timeInput.value, dayName: cb.nextElementSibling.textContent });
           }
         }
       }
 
       publishBtn.disabled = true;
       toggle(publishSpinner, true);
-      overlayText.innerHTML = 'Đang tiến hành đăng bài, vui lòng chờ...';
+      overlayText.innerHTML = 'Đang chuẩn bị bài đăng...';
       toggle(overlay, true);
 
       try {
-        let successCount = 0;
-        let totalPosts = schedulesData.length > 0 ? schedulesData.length : 1;
-        
-        // Nếu không có lịch, đăng ngay lập tức
-        if (schedulesData.length === 0) {
-          schedulesData.push({ type: 'immediate' });
-        }
-        
-        // Gọi webhook cho mỗi lịch đã thiết lập
-        for (let i = 0; i < schedulesData.length; i++) {
-          const schedule = schedulesData[i];
-          overlayText.innerHTML = schedule.type === 'immediate' 
-            ? 'Đang đăng bài ngay lập tức...'
-            : schedule.type === 'once' 
-              ? `Đang lên lịch đăng bài cho ngày ${schedule.date} lúc ${schedule.time}...`
-              : `Đang lên lịch đăng bài cho ${schedule.dayName} lúc ${schedule.time}... (${i + 1}/${totalPosts})`;
-          
-          const formData = new FormData();
-          formData.append('nick', nick);
-          formData.append('text', text);
-          formData.append('groups', JSON.stringify(selectedGroups));
-          
-          // Xử lý ảnh: chuyển tất cả ảnh thành base64
-          if (selectedOldPost && selectedOldPost.images) {
-            // Gửi ảnh từ bài cũ (base64)
-            selectedOldPost.images.forEach((imageBase64, idx) => {
-              formData.append('imageBase64_' + (idx + 1), imageBase64);
-            });
-            formData.append('useOldImages', 'true');
-          } else if (files.length > 0) {
-            // Convert ảnh mới thành base64
-            const imagePromises = Array.from(files).map(file => {
-              return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.readAsDataURL(file);
-              });
-            });
-            
-            const imageBase64Array = await Promise.all(imagePromises);
-            imageBase64Array.forEach((imageBase64, idx) => {
-              formData.append('imageBase64_' + (idx + 1), imageBase64);
-            });
-          }
-          
-          if (schedule.type !== 'immediate') {
-            // Format schedule data for webhook
-            let scheduleForWebhook;
-            if (schedule.type === 'once') {
-              scheduleForWebhook = {
-                date: schedule.date,
-                time: schedule.time
-              };
-            } else {
-              // For weekly schedule, calculate the actual date for the next occurrence of this day
-              const nextDate = getNextDateForDayOfWeek(schedule.dayOfWeek, schedule.time);
-              scheduleForWebhook = {
-                date: nextDate,
-                time: schedule.time,
-                dayOfWeek: schedule.dayOfWeek,
-                type: 'weekly'
-              };
+        let imageUrls = [];
+        if (selectedOldPost && selectedOldPost.images && selectedOldPost.images.length > 0) {
+          imageUrls = selectedOldPost.images;
+        } else if (files.length > 0) {
+          overlayText.innerHTML = `Đang tải lên ${files.length} ảnh...`;
+          const uploadPromises = Array.from(files).map(async (file) => {
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ error: 'Không thể đọc phản hồi' }));
+              throw new Error(`Tải ảnh '${file.name}' thất bại: ${errorData.error}`);
             }
-            formData.append('schedule', JSON.stringify(scheduleForWebhook));
-          }
-
-          const res = await fetch(postWebhook, { 
-            method: 'POST', 
-            body: formData 
+            const result = await response.json();
+            if (!result.imageUrl) {
+              throw new Error('Phản hồi từ server không chứa URL ảnh.');
+            }
+            return result.imageUrl;
           });
-          
-          if (res.ok) {
-            successCount++;
-          } else {
-            console.error('Failed to post for schedule:', schedule);
-          }
-          
-          // Thêm delay nhỏ giữa các request
-          if (i < schedulesData.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+          imageUrls = await Promise.all(uploadPromises);
         }
 
-        if (successCount === 0) {
-          throw new Error('Tất cả các yêu cầu đăng bài đều thất bại');
+        const basePayload = { nick, groups: selectedGroups, content, imageUrls };
+        let successCount = 0;
+        const schedulesToRun = schedulesData.length > 0 ? schedulesData : [{ type: 'immediate' }];
+
+        for (let i = 0; i < schedulesToRun.length; i++) {
+          overlayText.innerHTML = `Đang gửi yêu cầu... (${i + 1}/${schedulesToRun.length})`;
+          const payload = { ...basePayload, schedule: schedulesToRun[i] };
+          const webhookResponse = await fetch(processWebhookUrl(postWebhook), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (webhookResponse.ok) successCount++;
+          else console.error('Webhook lỗi:', await webhookResponse.text());
         }
 
-        // Tạo dữ liệu bài đăng để lưu vào danh sách lên lịch
-        const postData = {
-          content: text,
-          groups: selectedGroups,
-          imageCount: selectedOldPost ? selectedOldPost.imageCount : files.length,
-          schedules: schedulesData.filter(s => s.type !== 'immediate'),
-          totalSchedules: schedulesData.length,
-          successCount: successCount,
-          createdAt: new Date().toISOString(),
-          nick: nick
-        };
+        if (successCount === 0) throw new Error('Tất cả các yêu cầu đăng bài đều thất bại.');
 
-        // Lưu bài đăng vào danh sách lên lịch
-        saveScheduledPost(postData);
-
-        // Nếu là bài mới, lưu vào danh sách để tái sử dụng
-        if (!selectedOldPost && files.length > 0) {
-          // Chuyển đổi ảnh thành base64 để lưu
-          const imagePromises = Array.from(files).map(file => {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onload = (e) => resolve(e.target.result);
-              reader.readAsDataURL(file);
-            });
-          });
-          
-          try {
-            const imageBase64Array = await Promise.all(imagePromises);
-            const postForReuse = {
-              content: text,
-              images: imageBase64Array,
-              imageCount: files.length,
-              nick: nick
-            };
-            savePostForReuse(postForReuse);
-          } catch (err) {
-            console.error('Lỗi khi lưu ảnh:', err);
-          }
+        const postDataForStorage = { content, groups: selectedGroups, imageUrls, imageCount: imageUrls.length, schedules: schedulesData, totalSchedules: schedulesData.length, successCount, createdAt: new Date().toISOString(), nick };
+        
+        if (!selectedOldPost && (content || imageUrls.length > 0)) {
+           savePostForReuse(postDataForStorage);
         }
         
-        // Hiển thị thông tin bài đăng mới
-        showNewPostDetails(postData);
-
-        // Chuyển đến trang hiển thị danh sách bài đăng đã lên lịch
+        saveScheduledPost(postDataForStorage);
+        showNewPostDetails(postDataForStorage);
         showFeature2Step(step2_3);
-        
-        // Reset toàn bộ state của tính năng "sử dụng bài cũ"
-        resetOldPostFeatureState();
-        
-        // Reset schedule
-        enableSchedule.checked = false;
-        toggle(scheduleInputs, false);
-        scheduleMode.value = 'once';
-        document.querySelectorAll('.day-checkbox').forEach(cb => {
-          cb.checked = false;
-          const timeInput = $('time_' + cb.value);
-          if (timeInput) {
-            timeInput.disabled = true;
-            timeInput.value = '';
-          }
-        });
-        updateCharCount();
-        checkPostImageCount();
 
-        toggle(overlay, false);
-        overlayText.innerHTML = 'Đang xử lý...';
-      } catch (err) {
-        console.error(err);
-        alert('Đăng bài thất bại: ' + err.message);
-        toggle(overlay, false);
+      } catch (error) {
+        console.error('Lỗi khi đăng bài:', error);
+        alert('Đăng bài thất bại: ' + error.message);
       } finally {
         publishBtn.disabled = false;
         toggle(publishSpinner, false);
+        toggle(overlay, false);
+        resetOldPostFeatureState();
       }
     });
+
+
+    // Also, we need to fix the `savePostForReuse` to accept `imageUrls`
+    function savePostForReuse(postData) {
+      const existingIndex = savedPosts.findIndex(post => post.content === postData.content);
+      if (existingIndex !== -1) {
+        savedPosts.splice(existingIndex, 1);
+      }
+      savedPosts.unshift({
+        id: Date.now(),
+        content: postData.content,
+        images: postData.imageUrls || [], // Changed from postData.images to postData.imageUrls
+        imageCount: postData.imageCount || 0,
+        createdAt: new Date().toISOString(),
+        nick: postData.nick
+      });
+      if (savedPosts.length > 5) {
+        savedPosts = savedPosts.slice(0, 5);
+      }
+      localStorage.setItem('savedPosts', JSON.stringify(savedPosts));
+      updateOldPostCount();
+    }
 
     // ---- FEATURE 3: Quét nhóm cho mời thành viên ----
     scanBtn3.addEventListener('click', async () => {
