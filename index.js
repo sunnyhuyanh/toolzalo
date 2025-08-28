@@ -135,7 +135,7 @@ app.use(['/webhook/*', '/webhook-test/*'], async (req, res) => {
       data: req.body,
       headers: proxyHeaders,
       responseType: 'arraybuffer',
-      timeout: 60000,
+      timeout: 300000,
       validateStatus: () => true, // Accept any status code
       maxRedirects: 5,
     });
@@ -159,6 +159,7 @@ app.use(['/webhook/*', '/webhook-test/*'], async (req, res) => {
     res.status(response.status).send(response.data);
 
   } catch (error) {
+    console.error('[PROXY ERROR] Full error object:', JSON.stringify(error, null, 2));
     console.error('[PROXY ERROR]:', error.message);
     
     if (error.response) {
@@ -191,7 +192,7 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     const host = process.env.RAILWAY_PUBLIC_DOMAIN || `localhost:${PORT}`;
     console.log('========================================');
     console.log(`🚀 Server running on ${process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + host : 'http://' + host}`);
@@ -202,3 +203,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🔧 Port: ${PORT}`);
     console.log('========================================');
 });
+
+server.setTimeout(300000); // 5 minute server timeout
+server.keepAliveTimeout = 300000; // Match server timeout
+server.headersTimeout = 300000; // Match server timeout

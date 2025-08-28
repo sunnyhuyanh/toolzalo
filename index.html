@@ -183,6 +183,7 @@
     .feature-card:hover::before {
       opacity: 1;
     }
+    
     .btn-primary {
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       color: white;
@@ -475,7 +476,7 @@
       <div class="text-center pt-4 border-t border-gray-100/50">
         <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414L10 11.414l1.293 1.293a1 1 0 01-1.414 1.414L10 13.414l-1.293 1.293a1 1 0 01-1.414-1.414L8.586 12 7.293 10.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd"/>
           </svg>
           <span>Developed by <strong class="text-gray-700">Hailinhmacduc</strong></span>
         </div>
@@ -630,7 +631,6 @@
             </div>
           </div>
         </div>
-
         <!-- Main Features -->
         <div class="px-6 sm:px-10 py-8 space-y-6">
           <div class="flex items-center gap-3 mb-6">
@@ -957,7 +957,6 @@
             </div>
           </div>
         </div>
-
         <style>
           @keyframes modalOpen {
             from {
@@ -1298,7 +1297,6 @@
               </div>
             </div>
           </div>
-
           <div class="flex flex-col sm:flex-row gap-4">
             <button id="scheduleNewPostBtn" class="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl touch-manipulation">
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -1639,7 +1637,6 @@
     const overlayText = $('overlayText');
     const step1 = $('step1');
     const step2 = $('step2');
-
     const nickSelect = $('nickSelect');
     const scanBtn = $('scanBtn');
     const spinner = $('spinner');
@@ -1649,7 +1646,6 @@
     const actionsBox = $('actionsBox');
     const groupSelect = $('groupSelect');
     const nextBtn = $('nextBtn');
-
     const backBtn = $('backBtn');
     const sendMsgBtn = $('sendMsgBtn');
     const spinnerSend = $('spinnerSend');
@@ -1956,7 +1952,6 @@
         oldPostsList.appendChild(postElement);
       });
     }
-
     // Hàm xem trước bài cũ
     function previewOldPost(index) {
       const post = savedPosts[index];
@@ -2289,7 +2284,6 @@
       
       return false;
     }
-
     // Hàm cập nhật danh sách bài đăng đã lên lịch
     function updateScheduledPostsList() {
       // Lọc chỉ những bài đăng tương lai
@@ -2606,7 +2600,6 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       showPage(homePage);
       updateDashboard();
     }
-    
     // Update dashboard with user information
     function updateDashboard() {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -2929,7 +2922,6 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         toggle(eyeClosed, false);
       }
     });
-
     // Xử lý đăng nhập
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -3058,7 +3050,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
 
       scanBtn.disabled = true;
       toggle(spinner, true);
-      overlayText.innerHTML = 'Đang quét nhóm, vui lòng chờ...';
+      overlayText.innerHTML = 'Việc quét nhóm có thể lâu hơn 1 phút, vui lòng chờ...';
       toggle(overlay, true);
       toggle(resultSec, false);
       toggle(actionsBox, false);
@@ -3069,13 +3061,20 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         console.log('Starting group scan with webhook:', scanWebhook);
         console.log('Nick selected:', nick);
         
+        // Create AbortController with 2.5 minute timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
+
         const res = await fetch(scanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nick }) 
+          body: JSON.stringify({ nick }),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         console.log('Response status:', res.status);
         console.log('Response headers:', res.headers);
@@ -3181,8 +3180,15 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         
         // More specific error messages
         let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
-        if (err.message.includes('Failed to fetch')) {
-          errorMessage = 'Không thể kết nối đến webhook. Vui lòng kiểm tra kết nối mạng.';
+        let shouldShowAlert = true;
+        
+        if (err.name === 'AbortError') {
+          errorMessage = 'Quét nhóm timeout sau 2.5 phút. Backend có thể đang xử lý chậm, vui lòng thử lại.';
+        } else if (err.message.includes('Failed to fetch')) {
+          // Browser timeout often causes "Failed to fetch" after ~1 minute
+          // Don't show popup if backend might still be processing
+          console.log('Failed to fetch - possibly browser timeout while backend still processing');
+          shouldShowAlert = false;
         } else if (err.message.includes('JSON')) {
           // Show a small snippet to help debug
           const snippet = (typeof responseText !== 'undefined') ? String(responseText).slice(0, 200) : '';
@@ -3191,7 +3197,9 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           errorMessage = `Lỗi từ server: ${err.message}`;
         }
         
-        alert(errorMessage);
+        if (shouldShowAlert) {
+          // alert(errorMessage);
+        }
       } finally {
         scanBtn.disabled = false;
         toggle(spinner, false);
@@ -3219,7 +3227,6 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-
         // ---- FEATURE 1: Gửi tin nhắn ----
         sendMsgBtn.addEventListener('click', async () => {
       const nick = nickSelect.value;
@@ -3299,7 +3306,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
 
       scanBtn2.disabled = true;
       toggle(spinner2, true);
-      overlayText.innerHTML = 'Đang quét nhóm, vui lòng chờ...';
+      overlayText.innerHTML = 'Việc quét nhóm có thể lâu hơn 1 phút, vui lòng chờ...';
       toggle(overlay, true);
       toggle(resultSection2, false);
       toggle(actionsBox2, false);
@@ -3307,13 +3314,20 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       selectedGroups = [];
 
       try {
+        // Create AbortController with 2.5 minute timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
+
         const res = await fetch(scanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nick }) 
+          body: JSON.stringify({ nick }),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -3348,8 +3362,35 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         toggle(resultSection2, true);
         updateSelectedGroupsCount();
       } catch (err) {
-        console.error(err);
-        alert('Quét nhóm thất bại, vui lòng thử lại.');
+        console.error('Error during group scan (feature 2):', err);
+        console.error('Error stack:', err.stack);
+        
+        // More specific error messages
+        let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
+        let shouldShowAlert = true;
+        
+        if (err.name === 'AbortError') {
+          errorMessage = 'Quét nhóm timeout sau 2.5 phút. Backend có thể đang xử lý chậm, vui lòng thử lại.';
+        } else if (err.message.includes('Failed to fetch')) {
+          // Browser timeout often causes "Failed to fetch" after ~1 minute
+          // Don't show popup if backend might still be processing
+          console.log('Failed to fetch - possibly browser timeout while backend still processing');
+          shouldShowAlert = false;
+        } else if (err.message.includes('JSON') || err.message.includes('Invalid JSON') || err.name === 'SyntaxError') {
+          // If response was successful but JSON parsing failed, don't show error  
+          if (err.responseOk || (err.name === 'SyntaxError' && err.message.includes('JSON'))) {
+            console.log('Response was successful but JSON invalid - not showing error popup');
+            shouldShowAlert = false;
+          } else {
+            errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.';
+          }
+        } else if (err.message.includes('HTTP error')) {
+          errorMessage = `Lỗi từ server: ${err.message}`;
+        }
+        
+        if (shouldShowAlert) {
+          // alert(errorMessage);
+        }
       } finally {
         scanBtn2.disabled = false;
         toggle(spinner2, false);
@@ -3502,12 +3543,10 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           console.log('Card is disabled, ignoring click');
           return;
         }
-        
         // Đảm bảo card không bị disabled
         this.classList.remove('disabled');
         this.style.pointerEvents = '';
         this.style.opacity = '';
-        
         // Thêm dữ liệu mẫu nếu chưa có bài viết nào
         if (savedPosts.length === 0) {
           console.log('No saved posts, creating sample posts...');
@@ -3781,7 +3820,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
 
       scanBtn3.disabled = true;
       toggle(spinner3, true);
-      overlayText.innerHTML = 'Đang quét nhóm, vui lòng chờ...';
+      overlayText.innerHTML = 'Đang quét nhóm, có thể lâu hơn 5 phút, vui lòng chờ...';
       toggle(overlay, true);
       toggle(resultSection3, false);
       toggle(actionsBox3, false);
@@ -3793,13 +3832,20 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       targetGroups = [];
 
       try {
+        // Create AbortController with 2.5 minute timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
+
         const res = await fetch(scanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nick }) 
+          body: JSON.stringify({ nick }),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         if (!res.ok) throw new Error('Network error');
         const raw = await res.json();
 
@@ -3846,14 +3892,40 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             `);
           });
         }
-        
         toggle(resultSection3, true);
         toggle(actionsBox3, true);
         updateSourceGroupsCount();
         updateTargetGroupsCount();
       } catch (err) {
-        console.error(err);
-        alert('Quét nhóm thất bại, vui lòng thử lại.');
+        console.error('Error during group scan (feature 3):', err);
+        console.error('Error stack:', err.stack);
+        
+        // More specific error messages
+        let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
+        let shouldShowAlert = true;
+        
+        if (err.name === 'AbortError') {
+          errorMessage = 'Quét nhóm timeout sau 2.5 phút. Backend có thể đang xử lý chậm, vui lòng thử lại.';
+        } else if (err.message.includes('Failed to fetch')) {
+          // Browser timeout often causes "Failed to fetch" after ~1 minute
+          // Don't show popup if backend might still be processing
+          console.log('Failed to fetch - possibly browser timeout while backend still processing');
+          shouldShowAlert = false;
+        } else if (err.message.includes('JSON') || err.message.includes('Invalid JSON') || err.name === 'SyntaxError') {
+          // If response was successful but JSON parsing failed, don't show error  
+          if (err.responseOk || (err.name === 'SyntaxError' && err.message.includes('JSON'))) {
+            console.log('Response was successful but JSON invalid - not showing error popup');
+            shouldShowAlert = false;
+          } else {
+            errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.';
+          }
+        } else if (err.message.includes('HTTP error')) {
+          errorMessage = `Lỗi từ server: ${err.message}`;
+        }
+        
+        if (shouldShowAlert) {
+          // alert(errorMessage);
+        }
       } finally {
         scanBtn3.disabled = false;
         toggle(spinner3, false);
@@ -3903,11 +3975,17 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         for (const group of sourceGroups) {
           overlayText.innerHTML = `Đang quét thành viên từ nhóm: ${group.name}...`;
           //  Gửi request đến webhook để quét thành viên
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
+          
           const res = await fetch(scanMembersWebhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nick, groupId: group.id })
+            body: JSON.stringify({ nick, groupId: group.id }),
+            signal: controller.signal
           });
+          
+          clearTimeout(timeoutId);
           
           if (!res.ok) throw new Error(`Lỗi khi quét nhóm ${group.name}`);
           
@@ -3988,6 +4066,9 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
             progressText.textContent = `${progress}%`;
             
             try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute for individual invite
+              
               const res = await fetch(inviteWebhook, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3997,8 +4078,11 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
                   memberId: member.id,
                   memberName: member.name || 'Không tên',
                   id_nick: currentIdNick
-                })
+                }),
+                signal: controller.signal
               });
+              
+              clearTimeout(timeoutId);
               
               if (res.ok) {
                 invitedSuccess++;
@@ -4097,4 +4181,3 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
   </script>
 </body>
 </html>
-
