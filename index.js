@@ -22,11 +22,16 @@ if (!CONFIG || !CONFIG.supabase) {
   console.error('FATAL: Supabase configuration is missing in config.js');
   process.exit(1);
 }
+
+console.log('🔧 [CONFIG] Supabase URL:', CONFIG.supabase.url);
+console.log('🔧 [CONFIG] Service key ends with:', CONFIG.supabase.serviceRoleKey.slice(-20));
+
 supabaseService.init(CONFIG.supabase).then(success => {
   if (!success) {
     console.error('FATAL: Supabase client failed to initialize. Check config and network.');
     process.exit(1);
   }
+  console.log('✅ Supabase service initialized with updated config');
 });
 // --- END FIX ---
 
@@ -72,18 +77,27 @@ app.get('/admin-panel', (req, res) => {
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   // --- DEBUG LOG ---
   console.log('✅ [SERVER] Received a request to /api/upload');
+  console.log('📁 [SERVER] File info:', {
+    originalname: req.file?.originalname,
+    mimetype: req.file?.mimetype,
+    size: req.file?.size,
+    bufferLength: req.file?.buffer?.length
+  });
   
   if (!req.file) {
     console.error('[SERVER] No file was uploaded in the request.');
     return res.status(400).json({ error: 'No file uploaded.' });
   }
 
+  console.log('🔄 [SERVER] Calling supabaseService.uploadFile...');
   const { publicURL, error } = await supabaseService.uploadFile(req.file);
 
   if (error) {
+    console.error('❌ [SERVER] Upload failed:', error);
     return res.status(500).json({ error: `File upload failed: ${error.message}` });
   }
 
+  console.log('✅ [SERVER] Upload successful! URL:', publicURL);
   res.status(200).json({ imageUrl: publicURL });
 });
 

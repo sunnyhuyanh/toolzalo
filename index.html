@@ -1520,9 +1520,6 @@
       </div>
 
       <script>
-// Get current user data
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
     // Function to process webhook URLs
     function processWebhookUrl(url) {
       if (!url) return '';
@@ -1548,25 +1545,76 @@
       return url;
     }
 
-    // Get webhooks from current user or use defaults
-    const rawScanWebhook = currentUser.scanWebhook || '/webhook/zalo-automation';
-    const rawSendWebhook = currentUser.sendWebhook || '/webhook/zalo-sent-text-image';
-    const rawPostWebhook = currentUser.postWebhook || '/webhook/zalo-post-group';
-    const rawInviteWebhook = currentUser.inviteWebhook || '/webhook/zalo-invite-member';
-    const rawScanMembersWebhook = currentUser.scanMembersWebhook || '/webhook/zalo-scan-members';
-    
-    const scanWebhook = processWebhookUrl(rawScanWebhook);
-    const sendWebhook = processWebhookUrl(rawSendWebhook);
-    const postWebhook = processWebhookUrl(rawPostWebhook);
-    const inviteWebhook = processWebhookUrl(rawInviteWebhook);
-    const scanMembersWebhook = processWebhookUrl(rawScanMembersWebhook);
-    
-    console.log('Webhook URLs configured for proxy:');
-    console.log('- scanWebhook:', scanWebhook);
-    console.log('- sendWebhook:', sendWebhook);
-    console.log('- postWebhook:', postWebhook);
-    console.log('- inviteWebhook:', inviteWebhook);
-    console.log('- scanMembersWebhook:', scanMembersWebhook);
+    // Function to get current webhooks from localStorage
+    function getCurrentWebhooks() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      const webhooks = {
+        scanWebhook: processWebhookUrl(currentUser.scanWebhook || '/webhook/zalo-automation'),
+        sendWebhook: processWebhookUrl(currentUser.sendWebhook || '/webhook/zalo-sent-text-image'),
+        postWebhook: processWebhookUrl(currentUser.postWebhook || '/webhook/zalo-post-group'),
+        inviteWebhook: processWebhookUrl(currentUser.inviteWebhook || '/webhook/zalo-invite-member'),
+        scanMembersWebhook: processWebhookUrl(currentUser.scanMembersWebhook || '/webhook/zalo-scan-members')
+      };
+      
+      console.log('Current webhook URLs from localStorage:');
+      console.log('- scanWebhook:', webhooks.scanWebhook);
+      console.log('- sendWebhook:', webhooks.sendWebhook);
+      console.log('- postWebhook:', webhooks.postWebhook);
+      console.log('- inviteWebhook:', webhooks.inviteWebhook);
+      console.log('- scanMembersWebhook:', webhooks.scanMembersWebhook);
+      
+      return webhooks;
+    }
+
+    // Function to refresh user data and webhooks from database
+    async function refreshUserData() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      if (!currentUser.username || currentUser.username === 'admin') {
+        console.log('Admin user or no user logged in, skipping refresh');
+        return { success: true, webhooks: getCurrentWebhooks() };
+      }
+
+      try {
+        console.log('🔄 Refreshing user data from database for user:', currentUser.username);
+        
+        // Initialize Supabase if not done yet
+        if (!window.supabaseService || !window.supabaseService.initialized) {
+          if (typeof CONFIG !== 'undefined' && CONFIG.supabase) {
+            await window.supabaseService.init(CONFIG.supabase);
+          }
+        }
+        
+        const { data: userData, error } = await window.supabaseService.getUserByUsername(currentUser.username);
+        
+        if (error || !userData) {
+          console.error('Failed to refresh user data:', error);
+          return { success: false, webhooks: getCurrentWebhooks(), error: error };
+        }
+        
+        // Update localStorage with fresh data
+        const { password: _, ...userWithoutPassword } = userData;
+        localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+        
+        console.log('✅ User data refreshed successfully');
+        console.log('Updated webhooks:', {
+          scan: userData.scanWebhook,
+          send: userData.sendWebhook,
+          post: userData.postWebhook,
+          invite: userData.inviteWebhook,
+          scanMembers: userData.scanMembersWebhook
+        });
+        
+        return { success: true, webhooks: getCurrentWebhooks() };
+      } catch (error) {
+        console.error('Error refreshing user data:', error);
+        return { success: false, webhooks: getCurrentWebhooks(), error: error.message };
+      }
+    }
+
+    // Get initial webhooks
+    let webhooks = getCurrentWebhooks()
 
     const ADMIN_USERNAME = 'admin';
     const ADMIN_PASSWORD = 'admin@123';
@@ -3750,11 +3798,28 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       groupSelect.innerHTML = '';
 
       try {
-        console.log('Starting group scan with webhook:', scanWebhook);
+        // Refresh webhooks from database first
+        console.log('🔄 Refreshing user data and webhooks from database...');
+        const refreshResult = await refreshUserData();
+        
+        if (!refreshResult.success) {
+          console.warn('⚠️ Failed to refresh user data, using cached webhooks:', refreshResult.error);
+        }
+        
+        // Get the latest webhooks
+        webhooks = getCurrentWebhooks();
+        const currentScanWebhook = webhooks.scanWebhook;
+        
+        console.log('Starting group scan (feature 1) with webhook:', currentScanWebhook);
         console.log('Nick selected:', nick);
         
+        // Validate webhook URL
+        if (!currentScanWebhook || currentScanWebhook === '') {
+          throw new Error('WEBHOOK_NOT_CONFIGURED: Scan webhook is not configured for this user. Please contact admin.');
+        }
+        
         // Use enhanced fetch with better error handling
-        const res = await fetchWithTimeout(scanWebhook, { 
+        const res = await fetchWithTimeout(currentScanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
@@ -3936,6 +4001,17 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         
         overlayText.innerHTML = 'Đang gửi tin nhắn tới webhook...';
         
+        // Get the latest webhooks
+        webhooks = getCurrentWebhooks();
+        const currentSendWebhook = webhooks.sendWebhook;
+        
+        console.log('Sending message with webhook:', currentSendWebhook);
+        
+        // Validate webhook URL
+        if (!currentSendWebhook || currentSendWebhook === '') {
+          throw new Error('WEBHOOK_NOT_CONFIGURED: Send webhook is not configured for this user. Please contact admin.');
+        }
+        
         const payload = {
           nick,
           groupId: currentGroup.id,
@@ -3944,7 +4020,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           imageUrls, // Send array of URLs
         };
 
-        const res = await fetch(sendWebhook, { 
+        const res = await fetch(currentSendWebhook, { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload) 
@@ -3994,11 +4070,28 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       selectedGroups = [];
 
       try {
-        console.log('Starting group scan for feature 2 with webhook:', scanWebhook);
+        // Refresh webhooks from database first
+        console.log('🔄 Refreshing user data and webhooks from database...');
+        const refreshResult = await refreshUserData();
+        
+        if (!refreshResult.success) {
+          console.warn('⚠️ Failed to refresh user data, using cached webhooks:', refreshResult.error);
+        }
+        
+        // Get the latest webhooks
+        webhooks = getCurrentWebhooks();
+        const currentScanWebhook = webhooks.scanWebhook;
+        
+        console.log('Starting group scan for feature 2 with webhook:', currentScanWebhook);
         console.log('Nick selected:', nick);
         
+        // Validate webhook URL
+        if (!currentScanWebhook || currentScanWebhook === '') {
+          throw new Error('WEBHOOK_NOT_CONFIGURED: Scan webhook is not configured for this user. Please contact admin.');
+        }
+        
         // Use enhanced fetch with better error handling
-        const res = await fetchWithTimeout(scanWebhook, { 
+        const res = await fetchWithTimeout(currentScanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
@@ -4454,6 +4547,17 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           imageUrls = await Promise.all(uploadPromises);
         }
 
+        // Get the latest webhooks
+        webhooks = getCurrentWebhooks();
+        const currentPostWebhook = webhooks.postWebhook;
+        
+        console.log('Posting to groups with webhook:', currentPostWebhook);
+        
+        // Validate webhook URL
+        if (!currentPostWebhook || currentPostWebhook === '') {
+          throw new Error('WEBHOOK_NOT_CONFIGURED: Post webhook is not configured for this user. Please contact admin.');
+        }
+        
         const basePayload = { nick, groups: selectedGroups, content, imageUrls };
         let successCount = 0;
         const schedulesToRun = schedulesData.length > 0 ? schedulesData : [{ type: 'immediate' }];
@@ -4461,7 +4565,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         for (let i = 0; i < schedulesToRun.length; i++) {
           overlayText.innerHTML = `Đang gửi yêu cầu... (${i + 1}/${schedulesToRun.length})`;
           const payload = { ...basePayload, schedule: schedulesToRun[i] };
-          const webhookResponse = await fetch(processWebhookUrl(postWebhook), {
+          const webhookResponse = await fetch(currentPostWebhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -4543,11 +4647,28 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       targetGroups = [];
 
       try {
-        console.log('Starting group scan for feature 3 with webhook:', scanWebhook);
+        // Refresh webhooks from database first
+        console.log('🔄 Refreshing user data and webhooks from database...');
+        const refreshResult = await refreshUserData();
+        
+        if (!refreshResult.success) {
+          console.warn('⚠️ Failed to refresh user data, using cached webhooks:', refreshResult.error);
+        }
+        
+        // Get the latest webhooks
+        webhooks = getCurrentWebhooks();
+        const currentScanWebhook = webhooks.scanWebhook;
+        
+        console.log('Starting group scan (feature 3) with webhook:', currentScanWebhook);
         console.log('Nick selected:', nick);
         
+        // Validate webhook URL
+        if (!currentScanWebhook || currentScanWebhook === '') {
+          throw new Error('WEBHOOK_NOT_CONFIGURED: Scan webhook is not configured for this user. Please contact admin.');
+        }
+        
         // Use enhanced fetch with better error handling
-        const res = await fetchWithTimeout(scanWebhook, { 
+        const res = await fetchWithTimeout(currentScanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
@@ -4695,6 +4816,18 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     scanMembersBtn.addEventListener('click', async () => {
       const nick = nickSelect3.value;
       
+      // Get the latest webhooks
+      webhooks = getCurrentWebhooks();
+      const currentScanMembersWebhook = webhooks.scanMembersWebhook;
+      
+      console.log('Scanning members with webhook:', currentScanMembersWebhook);
+      
+      // Validate webhook URL
+      if (!currentScanMembersWebhook || currentScanMembersWebhook === '') {
+        alert('WEBHOOK_NOT_CONFIGURED: Scan members webhook is not configured for this user. Please contact admin.');
+        return;
+      }
+      
       scanMembersBtn.disabled = true;
       toggle(scanMembersSpinner, true);
       overlayText.innerHTML = 'Đang quét thành viên trong nhóm, vui lòng chờ...';
@@ -4711,7 +4844,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
           
-          const res = await fetch(scanMembersWebhook, {
+          const res = await fetch(currentScanMembersWebhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nick, groupId: group.id }),
@@ -4777,6 +4910,18 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       const membersToInvite = members.slice(0, maxToInvite);
       const nick = nickSelect3.value;
       
+      // Get the latest webhooks
+      webhooks = getCurrentWebhooks();
+      const currentInviteWebhook = webhooks.inviteWebhook;
+      
+      console.log('Inviting members with webhook:', currentInviteWebhook);
+      
+      // Validate webhook URL
+      if (!currentInviteWebhook || currentInviteWebhook === '') {
+        alert('WEBHOOK_NOT_CONFIGURED: Invite webhook is not configured for this user. Please contact admin.');
+        return;
+      }
+      
       inviteBtn.disabled = true;
       toggle(inviteSpinner, true);
       toggle(progressContainer, true);
@@ -4802,7 +4947,7 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute for individual invite
               
-              const res = await fetch(inviteWebhook, {
+              const res = await fetch(currentInviteWebhook, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -471,15 +471,22 @@
 
     // Use the ADMIN client to bypass RLS for uploads (SERVER-SIDE ONLY)
     async uploadFile(file) {
+      console.log('🔍 [SUPABASE] uploadFile called');
+      console.log('🔍 [SUPABASE] Initialized:', this.initialized);
+      console.log('🔍 [SUPABASE] Admin client exists:', !!this.supabaseAdmin);
+      
       if (!this.checkInit() || !this.supabaseAdmin) {
         const errorMessage = !this.supabaseAdmin 
             ? 'Supabase admin client not initialized (running in browser or serviceRoleKey is missing)' 
             : 'Supabase client not initialized';
-        console.error(errorMessage);
+        console.error('❌ [SUPABASE]', errorMessage);
         return { error: { message: errorMessage } };
       }
     
       const fileName = `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+      console.log('📝 [SUPABASE] Uploading file:', fileName);
+      console.log('📝 [SUPABASE] Buffer size:', file.buffer.length, 'bytes');
+      console.log('📝 [SUPABASE] Content type:', file.mimetype);
       
       const { data, error } = await this.supabaseAdmin.storage
         .from('images')
@@ -490,16 +497,22 @@
         });
     
       if (error) {
-        console.error('Error uploading file to Supabase:', error);
+        console.error('❌ [SUPABASE] Upload error:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error
+        });
         return { error };
       }
     
+      console.log('✅ [SUPABASE] Upload successful! Path:', data.path);
+      
       // Use the PUBLIC client to get the public URL
       const { data: publicUrlData } = this.supabase.storage
         .from('images')
         .getPublicUrl(data.path);
     
-      console.log('Successfully uploaded file and got public URL:', publicUrlData.publicUrl);
+      console.log('✅ [SUPABASE] Public URL generated:', publicUrlData.publicUrl);
       return { publicURL: publicUrlData.publicUrl, error: null };
     }
   }
