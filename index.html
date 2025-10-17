@@ -1744,6 +1744,10 @@
     // Cache quét nhóm theo nick - lưu trong 1 giờ
     const GROUP_CACHE_KEY = 'groupScanCache';
     const CACHE_EXPIRY_HOURS = 1;
+    
+    // Session expiry tracking - Zalo web session lasts 14 days
+    const SESSION_EXPIRY_KEY = 'zaloSessionExpiry';
+    const SESSION_DURATION_DAYS = 14;
 
     // Hàm quản lý cache nhóm
     function getGroupCache(nick) {
@@ -1778,6 +1782,9 @@
           timestamp: new Date().toISOString()
         };
         localStorage.setItem(GROUP_CACHE_KEY, JSON.stringify(cache));
+        
+        // Update session expiry tracking when successfully scanning groups
+        updateSessionExpiry(nick);
       } catch (error) {
         console.error('Error saving group cache:', error);
       }
@@ -1819,6 +1826,106 @@
         return null;
       }
     }
+    
+    // ==================== SESSION EXPIRY MANAGEMENT ====================
+    
+    /**
+     * Update session expiry for a nick when successfully scanning groups
+     */
+    function updateSessionExpiry(nick) {
+      try {
+        const sessionData = JSON.parse(localStorage.getItem(SESSION_EXPIRY_KEY) || '{}');
+        const now = new Date();
+        const expiryDate = new Date(now.getTime() + (SESSION_DURATION_DAYS * 24 * 60 * 60 * 1000));
+        
+        sessionData[nick] = {
+          lastSuccessfulScan: now.toISOString(),
+          sessionExpiry: expiryDate.toISOString()
+        };
+        
+        localStorage.setItem(SESSION_EXPIRY_KEY, JSON.stringify(sessionData));
+        console.log(`Updated session expiry for nick: ${nick}, expires: ${expiryDate.toLocaleString('vi-VN')}`);
+      } catch (error) {
+        console.error('Error updating session expiry:', error);
+      }
+    }
+    
+    /**
+     * Get session expiry info for a nick
+     */
+    function getSessionExpiry(nick) {
+      try {
+        const sessionData = JSON.parse(localStorage.getItem(SESSION_EXPIRY_KEY) || '{}');
+        const nickData = sessionData[nick];
+        
+        if (!nickData) return null;
+        
+        const now = new Date();
+        const expiryDate = new Date(nickData.sessionExpiry);
+        const lastScanDate = new Date(nickData.lastSuccessfulScan);
+        
+        const timeLeft = expiryDate - now;
+        const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.ceil(timeLeft / (1000 * 60 * 60));
+        
+        return {
+          lastScan: lastScanDate,
+          expiryDate: expiryDate,
+          timeLeft: timeLeft,
+          daysLeft: daysLeft,
+          hoursLeft: hoursLeft,
+          isExpired: timeLeft <= 0,
+          isExpiringSoon: daysLeft <= 2 // Warning when < 2 days left
+        };
+      } catch (error) {
+        console.error('Error getting session expiry:', error);
+        return null;
+      }
+    }
+    
+    /**
+     * Format countdown text for display
+     */
+    function formatCountdown(sessionInfo) {
+      if (!sessionInfo) return '';
+      
+      if (sessionInfo.isExpired) {
+        return '⚠️ Phiên đăng nhập đã hết hạn - Cần đăng nhập lại';
+      }
+      
+      const { daysLeft, hoursLeft } = sessionInfo;
+      
+      if (daysLeft > 1) {
+        return `🕒 Còn ${daysLeft} ngày để đăng nhập lại`;
+      } else if (hoursLeft > 1) {
+        return `⏰ Còn ${hoursLeft} giờ để đăng nhập lại`;
+      } else {
+        return '🚨 Sắp hết hạn - Nên đăng nhập lại ngay';
+      }
+    }
+    
+    /**
+     * Update countdown display for all visible cache displays
+     */
+    function updateAllCountdowns() {
+      // Update Feature 1
+      const nick1 = nickSelect?.value;
+      if (nick1 && getCacheInfo(nick1)) {
+        updateCacheDisplay(1, nick1);
+      }
+      
+      // Update Feature 2
+      const nick2 = nickSelect2?.value;
+      if (nick2 && getCacheInfo(nick2)) {
+        updateCacheDisplay(2, nick2);
+      }
+      
+      // Update Feature 3
+      const nick3 = nickSelect3?.value;
+      if (nick3 && getCacheInfo(nick3)) {
+        updateCacheDisplay(3, nick3);
+      }
+    }
 
     // Functions để cập nhật hiển thị cache UI
     function updateCacheDisplay(featureNum, nick) {
@@ -1837,7 +1944,17 @@
                         cacheInfo.minutesAgo < 60 ? `${cacheInfo.minutesAgo} phút trước` : 
                         `${Math.floor(cacheInfo.minutesAgo / 60)} giờ trước`;
         
-        cacheTextElement.textContent = `Có ${cacheInfo.groupCount} nhóm đã lưu (${timeText}) - Tự động hiển thị`;
+        // Get session expiry info for countdown
+        const sessionInfo = getSessionExpiry(nick);
+        const countdownText = sessionInfo ? formatCountdown(sessionInfo) : '';
+        
+        // Combine cache info with countdown
+        let displayText = `Có ${cacheInfo.groupCount} nhóm đã lưu (${timeText}) - Tự động hiển thị`;
+        if (countdownText) {
+          displayText += `\n${countdownText}`;
+        }
+        
+        cacheTextElement.innerHTML = displayText.replace('\n', '<br><small class="text-xs opacity-75">') + '</small>';
         toggle(cacheInfoElement, true);
       } else {
         toggle(cacheInfoElement, false);
@@ -2092,6 +2209,190 @@
           <p class="text-green-600 font-medium">${message}</p>
         </div>
       `;
+    }
+
+    // ==================== SESSION EXPIRY & ERROR HANDLING ====================
+    
+    /**
+     * Enhanced error handler with session expiry detection
+     * @param {Error} error - The error object
+     * @param {string} context - Context where error occurred (e.g., 'scan_groups', 'send_message')
+     * @param {string} nick - Current nick being used
+     * @returns {Object} - { isSessionExpired: boolean, userMessage: string }
+     */
+    function handleWebhookError(error, context, nick) {
+      console.error(`[${context}] Error for nick ${nick}:`, error);
+      
+      let isSessionExpired = false;
+      let userMessage = '';
+      let errorType = 'unknown';
+      
+      // Detect session expiry scenarios
+      if (error.message.includes('EMPTY_RESPONSE')) {
+        errorType = 'empty_response';
+        isSessionExpired = true;
+        userMessage = `📭 <strong>Webhook trả về response rỗng</strong><br><br>
+          Nguyên nhân có thể:<br>
+          • <strong>Nick "${nick}" chưa đăng nhập vào Zalo</strong><br>
+          • Phiên đăng nhập đã hết hạn<br>
+          • Webhook backend chưa được cấu hình đúng<br><br>
+          <strong>Giải pháp:</strong><br>
+          1. Mở ứng dụng Zalo trên thiết bị<br>
+          2. Đảm bảo nick "${nick}" đã đăng nhập<br>
+          3. Quay lại đây và thử lại`;
+      } else if (error.message.includes('INVALID_JSON')) {
+        errorType = 'invalid_json';
+        isSessionExpired = true; // Likely session expired
+        const responseSnippet = error.message.split('Response: ')[1] || 'N/A';
+        userMessage = `📄 <strong>Webhook trả về dữ liệu không hợp lệ</strong><br><br>
+          Response từ webhook không phải là JSON hợp lệ.<br><br>
+          Response nhận được: <code class="text-xs bg-gray-100 p-1 rounded">${responseSnippet}</code><br><br>
+          Nguyên nhân có thể:<br>
+          • <strong>Nick "${nick}" cần đăng nhập lại vào Zalo</strong><br>
+          • Webhook backend trả về format không đúng<br>
+          • Zalo API đang có vấn đề<br><br>
+          <strong>Khuyến nghị:</strong> Đăng nhập lại vào Zalo với nick "${nick}"`;
+      } else if (error.name === 'AbortError') {
+        errorType = 'timeout';
+        isSessionExpired = true;
+        userMessage = `⏱️ <strong>Hết thời gian chờ phản hồi từ Zalo</strong><br><br>
+          Có thể do:<br>
+          • <strong>Phiên đăng nhập của nick "${nick}" đã hết hạn</strong><br>
+          • Kết nối mạng chậm hoặc webhook backend bị quá tải<br>
+          • Zalo đang bảo trì<br><br>
+          <strong>Khuyến nghị:</strong> Đăng nhập lại vào Zalo với nick "${nick}" và thử lại.`;
+      } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        errorType = 'network';
+        userMessage = `🌐 <strong>Lỗi kết nối mạng</strong><br><br>
+          Không thể kết nối đến webhook server.<br><br>
+          Vui lòng kiểm tra:<br>
+          • Kết nối internet<br>
+          • Webhook server có đang hoạt động không<br>
+          • Firewall hoặc VPN có chặn không`;
+      } else if (error.message.includes('status 401') || error.message.includes('Unauthorized')) {
+        errorType = 'unauthorized';
+        isSessionExpired = true;
+        userMessage = `🔒 <strong>Phiên đăng nhập đã hết hạn</strong><br><br>
+          Nick "${nick}" cần đăng nhập lại vào Zalo.<br><br>
+          Vui lòng:<br>
+          1. Mở ứng dụng Zalo<br>
+          2. Đăng nhập lại với nick "${nick}"<br>
+          3. Quay lại đây và thử lại`;
+      } else if (error.message.includes('status 500') || error.message.includes('status 502') || error.message.includes('status 503')) {
+        errorType = 'server_error';
+        userMessage = `⚠️ <strong>Lỗi server backend</strong><br><br>
+          Webhook server đang gặp sự cố.<br><br>
+          Vui lòng:<br>
+          • Thử lại sau vài phút<br>
+          • Liên hệ admin nếu lỗi vẫn tiếp diễn`;
+      } else if (error.message.includes('JSON') || error.message.includes('parse')) {
+        errorType = 'invalid_response';
+        isSessionExpired = true;
+        userMessage = `📄 <strong>Dữ liệu phản hồi không hợp lệ</strong><br><br>
+          Webhook trả về dữ liệu không đúng định dạng.<br><br>
+          Có thể nick "${nick}" cần đăng nhập lại hoặc webhook cần được cấu hình lại.`;
+      } else {
+        errorType = 'unknown';
+        userMessage = `❌ <strong>Lỗi không xác định</strong><br><br>
+          ${error.message || 'Đã xảy ra lỗi khi xử lý yêu cầu.'}<br><br>
+          Nếu lỗi này lặp lại, có thể phiên đăng nhập Zalo đã hết hạn.<br>
+          Vui lòng đăng nhập lại vào Zalo với nick "${nick}".`;
+      }
+      
+      // Log for analytics
+      logErrorEvent({
+        context,
+        nick,
+        errorType,
+        isSessionExpired,
+        timestamp: new Date().toISOString(),
+        errorMessage: error.message
+      });
+      
+      return { isSessionExpired, userMessage, errorType };
+    }
+    
+    /**
+     * Log error events to localStorage for troubleshooting
+     */
+    function logErrorEvent(errorData) {
+      try {
+        const errorLogs = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+        errorLogs.unshift(errorData);
+        
+        // Keep only last 50 errors
+        if (errorLogs.length > 50) {
+          errorLogs.splice(50);
+        }
+        
+        localStorage.setItem('errorLogs', JSON.stringify(errorLogs));
+        console.log('Error logged:', errorData);
+      } catch (e) {
+        console.warn('Failed to log error:', e);
+      }
+    }
+    
+    /**
+     * Show error overlay with session expiry warning
+     */
+    function showErrorOverlay(userMessage, isSessionExpired = false) {
+      const iconColor = isSessionExpired ? 'text-orange-500' : 'text-red-500';
+      const bgColor = isSessionExpired ? 'bg-orange-500' : 'bg-red-500';
+      
+      overlayText.innerHTML = `
+        <div class="flex flex-col items-center gap-4 max-w-2xl">
+          <div class="w-16 h-16 ${bgColor} rounded-full flex items-center justify-center animate-pulse">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="text-center ${iconColor}">
+            ${userMessage}
+          </div>
+          ${isSessionExpired ? `
+            <div class="mt-4 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+              <p class="text-sm text-yellow-800 font-semibold">💡 Hướng dẫn đăng nhập lại:</p>
+              <ol class="text-sm text-yellow-700 mt-2 space-y-1 text-left">
+                <li>1. Mở ứng dụng Zalo trên thiết bị</li>
+                <li>2. Chọn nick cần đăng nhập lại</li>
+                <li>3. Đăng nhập với tài khoản và mật khẩu</li>
+                <li>4. Quay lại đây và thử lại</li>
+              </ol>
+            </div>
+          ` : ''}
+          <button onclick="toggle(overlay, false)" class="mt-4 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors">
+            Đóng
+          </button>
+        </div>
+      `;
+      
+      toggle(overlay, true);
+    }
+    
+    /**
+     * Enhanced fetch with better error handling and timeout
+     */
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 150000) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+      }
     }
 
     // Hàm lưu bài đăng đã lên lịch
@@ -3452,29 +3753,17 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         console.log('Starting group scan with webhook:', scanWebhook);
         console.log('Nick selected:', nick);
         
-        // Create AbortController with 2.5 minute timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
-
-        const res = await fetch(scanWebhook, { 
+        // Use enhanced fetch with better error handling
+        const res = await fetchWithTimeout(scanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nick }),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
+          body: JSON.stringify({ nick })
+        }, 150000); // 2.5 minutes timeout
         
         console.log('Response status:', res.status);
         console.log('Response headers:', res.headers);
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error('Response error:', errorText);
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
         
         const responseText = await res.text();
         console.log('Raw response text:', responseText);
@@ -3569,36 +3858,23 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
           console.log(`Successfully loaded ${groups.length} groups - saved to cache`);
         }
         toggle(resultSec, true);
+        
+        // Hide overlay on success
+        toggle(overlay, false);
       } catch (err) {
         console.error('Error during group scan:', err);
         console.error('Error stack:', err.stack);
         
-        // More specific error messages
-        let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
-        let shouldShowAlert = true;
+        // Use enhanced error handler with session expiry detection
+        const { isSessionExpired, userMessage } = handleWebhookError(err, 'scan_groups_feature1', nick);
         
-        if (err.name === 'AbortError') {
-          errorMessage = 'Quét nhóm timeout sau 2.5 phút. Backend có thể đang xử lý chậm, vui lòng thử lại.';
-        } else if (err.message.includes('Failed to fetch')) {
-          // Browser timeout often causes "Failed to fetch" after ~1 minute
-          // Don't show popup if backend might still be processing
-          console.log('Failed to fetch - possibly browser timeout while backend still processing');
-          shouldShowAlert = false;
-        } else if (err.message.includes('JSON')) {
-          // Show a small snippet to help debug
-          const snippet = (typeof responseText !== 'undefined') ? String(responseText).slice(0, 200) : '';
-          errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.' + (snippet ? `\nSnippet: ${snippet}` : '');
-        } else if (err.message.includes('HTTP error')) {
-          errorMessage = `Lỗi từ server: ${err.message}`;
-        }
+        // Show error overlay with appropriate message
+        showErrorOverlay(userMessage, isSessionExpired);
         
-        if (shouldShowAlert) {
-          // alert(errorMessage);
-        }
       } finally {
         scanBtn.disabled = false;
         toggle(spinner, false);
-        toggle(overlay, false);
+        // Overlay will be hidden in success block or by showErrorOverlay in catch block
       }
     });
 
@@ -3718,28 +3994,63 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       selectedGroups = [];
 
       try {
-        // Create AbortController with 2.5 minute timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
-
-        const res = await fetch(scanWebhook, { 
+        console.log('Starting group scan for feature 2 with webhook:', scanWebhook);
+        console.log('Nick selected:', nick);
+        
+        // Use enhanced fetch with better error handling
+        const res = await fetchWithTimeout(scanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nick }),
-          signal: controller.signal
-        });
+          body: JSON.stringify({ nick })
+        }, 150000); // 2.5 minutes timeout
         
-        clearTimeout(timeoutId);
-        if (!res.ok) throw new Error('Network error');
-        const raw = await res.json();
+        // Read response as text first to handle empty responses
+        const responseText = await res.text();
+        console.log('Raw response text:', responseText);
+        
+        // Check if response is empty
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('EMPTY_RESPONSE: Webhook returned empty response. Nick may need to login again.');
+        }
+        
+        // Try to parse JSON safely
+        let raw;
+        try {
+          raw = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          console.error('Response text:', responseText.substring(0, 500));
+          throw new Error('INVALID_JSON: Webhook returned invalid JSON. Response: ' + responseText.substring(0, 100));
+        }
+        
+        console.log('Parsed response:', raw);
 
         let groups = [];
-        if (Array.isArray(raw)) {
-          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ id: i.groupId || i.groupid || i.id, name: i.name || i.groupName || 'Không tên' }));
-        } else if (raw.groups) {
-          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => typeof g === 'string' ? { id: g, name: g } : { id: g.id || g.groupId, name: g.name || g.groupName || g.id });
+        
+        // Handle n8n's nested { "response": { "body": [...] } } structure
+        if (raw && raw.response && Array.isArray(raw.response.body)) {
+          groups = raw.response.body.map(item => ({
+            id: item.groupId || item.groupid || item.id || item.group_id,
+            name: item.name || item.groupName || item.group_name || 'Không tên'
+          }));
+        }
+        // Handle direct array format
+        else if (Array.isArray(raw)) {
+          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ 
+            id: i.groupId || i.groupid || i.id, 
+            name: i.name || i.groupName || 'Không tên' 
+          }));
+        } 
+        // Handle object with groups property
+        else if (raw && raw.groups) {
+          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => 
+            typeof g === 'string' ? { id: g, name: g } : { 
+              id: g.id || g.groupId, 
+              name: g.name || g.groupName || g.id 
+            }
+          );
         }
 
         // Lưu kết quả vào cache
@@ -3769,40 +4080,23 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         }
         toggle(resultSection2, true);
         updateSelectedGroupsCount();
+        
+        // Hide overlay on success
+        toggle(overlay, false);
       } catch (err) {
         console.error('Error during group scan (feature 2):', err);
         console.error('Error stack:', err.stack);
         
-        // More specific error messages
-        let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
-        let shouldShowAlert = true;
+        // Use enhanced error handler with session expiry detection
+        const { isSessionExpired, userMessage } = handleWebhookError(err, 'scan_groups_feature2', nick);
         
-        if (err.name === 'AbortError') {
-          errorMessage = 'Quét nhóm timeout sau 2.5 phút. Backend có thể đang xử lý chậm, vui lòng thử lại.';
-        } else if (err.message.includes('Failed to fetch')) {
-          // Browser timeout often causes "Failed to fetch" after ~1 minute
-          // Don't show popup if backend might still be processing
-          console.log('Failed to fetch - possibly browser timeout while backend still processing');
-          shouldShowAlert = false;
-        } else if (err.message.includes('JSON') || err.message.includes('Invalid JSON') || err.name === 'SyntaxError') {
-          // If response was successful but JSON parsing failed, don't show error  
-          if (err.responseOk || (err.name === 'SyntaxError' && err.message.includes('JSON'))) {
-            console.log('Response was successful but JSON invalid - not showing error popup');
-            shouldShowAlert = false;
-          } else {
-            errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.';
-          }
-        } else if (err.message.includes('HTTP error')) {
-          errorMessage = `Lỗi từ server: ${err.message}`;
-        }
+        // Show error overlay with appropriate message
+        showErrorOverlay(userMessage, isSessionExpired);
         
-        if (shouldShowAlert) {
-          // alert(errorMessage);
-        }
       } finally {
         scanBtn2.disabled = false;
         toggle(spinner2, false);
-        toggle(overlay, false);
+        // Overlay will be hidden in success block or by showErrorOverlay in catch block
       }
     });
 
@@ -4249,28 +4543,63 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
       targetGroups = [];
 
       try {
-        // Create AbortController with 2.5 minute timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 150000); // 2.5 minutes
-
-        const res = await fetch(scanWebhook, { 
+        console.log('Starting group scan for feature 3 with webhook:', scanWebhook);
+        console.log('Nick selected:', nick);
+        
+        // Use enhanced fetch with better error handling
+        const res = await fetchWithTimeout(scanWebhook, { 
           method: 'POST', 
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nick }),
-          signal: controller.signal
-        });
+          body: JSON.stringify({ nick })
+        }, 150000); // 2.5 minutes timeout
         
-        clearTimeout(timeoutId);
-        if (!res.ok) throw new Error('Network error');
-        const raw = await res.json();
+        // Read response as text first to handle empty responses
+        const responseText = await res.text();
+        console.log('Raw response text:', responseText);
+        
+        // Check if response is empty
+        if (!responseText || responseText.trim() === '') {
+          throw new Error('EMPTY_RESPONSE: Webhook returned empty response. Nick may need to login again.');
+        }
+        
+        // Try to parse JSON safely
+        let raw;
+        try {
+          raw = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          console.error('Response text:', responseText.substring(0, 500));
+          throw new Error('INVALID_JSON: Webhook returned invalid JSON. Response: ' + responseText.substring(0, 100));
+        }
+        
+        console.log('Parsed response:', raw);
 
         let groups = [];
-        if (Array.isArray(raw)) {
-          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ id: i.groupId || i.groupid || i.id, name: i.name || i.groupName || 'Không tên' }));
-        } else if (raw.groups) {
-          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => typeof g === 'string' ? { id: g, name: g } : { id: g.id || g.groupId, name: g.name || g.groupName || g.id });
+        
+        // Handle n8n's nested { "response": { "body": [...] } } structure
+        if (raw && raw.response && Array.isArray(raw.response.body)) {
+          groups = raw.response.body.map(item => ({
+            id: item.groupId || item.groupid || item.id || item.group_id,
+            name: item.name || item.groupName || item.group_name || 'Không tên'
+          }));
+        }
+        // Handle direct array format
+        else if (Array.isArray(raw)) {
+          groups = raw.filter(i => i.groupId || i.groupid || i.id).map(i => ({ 
+            id: i.groupId || i.groupid || i.id, 
+            name: i.name || i.groupName || 'Không tên' 
+          }));
+        } 
+        // Handle object with groups property
+        else if (raw && raw.groups) {
+          groups = raw.groups.filter(g => typeof g === 'string' || g.id || g.groupId).map(g => 
+            typeof g === 'string' ? { id: g, name: g } : { 
+              id: g.id || g.groupId, 
+              name: g.name || g.groupName || g.id 
+            }
+          );
         }
 
         // Lưu kết quả vào cache
@@ -4317,40 +4646,23 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
         toggle(actionsBox3, true);
         updateSourceGroupsCount();
         updateTargetGroupsCount();
+        
+        // Hide overlay on success
+        toggle(overlay, false);
       } catch (err) {
         console.error('Error during group scan (feature 3):', err);
         console.error('Error stack:', err.stack);
         
-        // More specific error messages
-        let errorMessage = 'Quét nhóm thất bại, vui lòng thử lại.';
-        let shouldShowAlert = true;
+        // Use enhanced error handler with session expiry detection
+        const { isSessionExpired, userMessage } = handleWebhookError(err, 'scan_groups_feature3', nick);
         
-        if (err.name === 'AbortError') {
-          errorMessage = 'Quét nhóm timeout sau 2.5 phút. Backend có thể đang xử lý chậm, vui lòng thử lại.';
-        } else if (err.message.includes('Failed to fetch')) {
-          // Browser timeout often causes "Failed to fetch" after ~1 minute
-          // Don't show popup if backend might still be processing
-          console.log('Failed to fetch - possibly browser timeout while backend still processing');
-          shouldShowAlert = false;
-        } else if (err.message.includes('JSON') || err.message.includes('Invalid JSON') || err.name === 'SyntaxError') {
-          // If response was successful but JSON parsing failed, don't show error  
-          if (err.responseOk || (err.name === 'SyntaxError' && err.message.includes('JSON'))) {
-            console.log('Response was successful but JSON invalid - not showing error popup');
-            shouldShowAlert = false;
-          } else {
-            errorMessage = 'Dữ liệu response không hợp lệ. Vui lòng kiểm tra webhook configuration.';
-          }
-        } else if (err.message.includes('HTTP error')) {
-          errorMessage = `Lỗi từ server: ${err.message}`;
-        }
+        // Show error overlay with appropriate message
+        showErrorOverlay(userMessage, isSessionExpired);
         
-        if (shouldShowAlert) {
-          // alert(errorMessage);
-        }
       } finally {
         scanBtn3.disabled = false;
         toggle(spinner3, false);
-        toggle(overlay, false);
+        // Overlay will be hidden in success block or by showErrorOverlay in catch block
       }
     });
     
@@ -4584,6 +4896,9 @@ Tạo lúc: ${formatDateTime(post.createdAt.split('T')[0], post.createdAt.split(
     toggle(cacheInfo1, false);
     toggle(cacheInfo2, false);
     toggle(cacheInfo3, false);
+    
+    // Start countdown timer - update every minute
+    setInterval(updateAllCountdowns, 60000); // 60 seconds
     
     // Kiểm tra elements quan trọng và khởi tạo event listener cho card "sử dụng bài cũ"
     if (ensureCriticalElementsExist()) {
