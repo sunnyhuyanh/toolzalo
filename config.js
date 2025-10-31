@@ -3,9 +3,9 @@
 
 const CONFIG = {
   supabase: {
-    url: 'https://lbnhswcnwckdyrqnoply.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxibmhzd2Nud2NrZHlycW5vcGx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyMjk3NTIsImV4cCI6MjA2MDgwNTc1Mn0.OHrJ3Zi9nlmqnJU2eMsmemNbjkjna0jJpoblHeTLe8U',
-    serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxibmhzd2Nud2NrZHlycW5vcGx5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTIyOTc1MiwiZXhwIjoyMDYwODA1NzUyfQ.1aETbU90tZT16Yk1hrSle2CnuQRrQTiqxSSnQamVr7A'
+    url: 'https://zisqqhzxzltsnlanbqmt.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppc3FxaHp4emx0c25sYW5icW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MDA4NzEsImV4cCI6MjA3NzQ3Njg3MX0.poPsCPAhTxZHzn43sS3XfHM-oW4W42Euf1Ksk9-BE1c',
+    serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppc3FxaHp4emx0c25sYW5icW10Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTkwMDg3MSwiZXhwIjoyMDc3NDc2ODcxfQ.6_0gn6pytorWfLZJqPva2yjAJo0yH8HpKNAIKHGzvNA'
   },
   
   // For development, you can temporarily use demo config:
