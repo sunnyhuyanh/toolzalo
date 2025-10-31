@@ -282,4 +282,4 @@ MIT License - see LICENSE file
 
 ## 🙏 Credits
 
-Developed by Hailinhmacduc
+Developed by Hailinhmacduc"# toolzalo" 
